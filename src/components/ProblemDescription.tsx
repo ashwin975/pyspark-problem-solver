@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
 import DifficultyBadge from "./DifficultyBadge";
+import { FormattedDescription } from "./MarkdownTable";
 import type { Problem } from "@/data/problems";
 import { cn } from "@/lib/utils";
-
 interface ProblemDescriptionProps {
   problem: Problem;
 }
@@ -58,11 +57,7 @@ const ProblemDescription = ({ problem }: ProblemDescriptionProps) => {
               {problem.category}
             </div>
 
-            <div className="prose prose-invert prose-sm max-w-none">
-              <div className="whitespace-pre-wrap text-sm text-foreground/90 leading-relaxed">
-                {problem.description}
-              </div>
-            </div>
+            <FormattedDescription text={problem.description} />
           </div>
         </TabsContent>
 
@@ -119,12 +114,12 @@ const ProblemDescription = ({ problem }: ProblemDescriptionProps) => {
                 Try solving the problem yourself first! Looking at solutions too early can hinder your learning.
               </p>
             </div>
-            <div className="rounded-lg bg-editor-bg border border-border overflow-hidden">
-              <div className="border-b border-border px-4 py-2 text-xs text-muted-foreground">
+            <div className="rounded-lg bg-muted border border-border overflow-hidden">
+              <div className="border-b border-border bg-secondary px-4 py-2 text-xs text-muted-foreground">
                 solution.py
               </div>
-              <pre className="p-4 text-sm overflow-x-auto">
-                <code className="text-foreground/90 font-mono">
+              <pre className="p-4 text-sm overflow-x-auto bg-card">
+                <code className="text-foreground font-mono whitespace-pre-wrap">
                   {problem.solution}
                 </code>
               </pre>
