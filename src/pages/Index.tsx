@@ -18,8 +18,8 @@ import { problems } from "@/data/problems";
 const Index = () => {
   const stats = {
     problems: problems.length,
-    categories: 10, // Number of PySpark categories
-    contributors: 52, // ZillaCode inspired
+    categories: 12, // Number of PySpark categories
+    contributors: 100, // ZillaCode inspired
   };
 
   return (
