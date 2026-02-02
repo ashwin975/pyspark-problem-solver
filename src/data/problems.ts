@@ -1254,6 +1254,795 @@ def etl(products_df):
       "Always handle null inputs"
     ]
   },
+
+  // ============= ADVANCED FILTERING =============
+  {
+    id: "31",
+    title: "Filter with IN Clause",
+    difficulty: "Easy",
+    category: "Filtering",
+    description: `Filter employees who work in specific departments: "Engineering", "Marketing", or "Sales".
+
+**employees_df Schema:**
+| Column Name | Data Type |
+|-------------|-----------|
+| emp_id      | integer   |
+| name        | string    |
+| department  | string    |
+
+Return only employees in these three departments.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    # Filter employees in Engineering, Marketing, or Sales
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    departments = ["Engineering", "Marketing", "Sales"]
+    result_df = employees_df.filter(F.col("department").isin(departments))
+    return result_df`,
+    explanation: `Use isin() to filter rows where a column value matches any value in a list.`,
+    hints: [
+      "isin() checks membership in a list",
+      "Alternative: use multiple OR conditions",
+      "isin works with arrays or individual values"
+    ]
+  },
+  {
+    id: "32",
+    title: "Filter with NOT IN",
+    difficulty: "Easy",
+    category: "Filtering",
+    description: `Filter employees who are NOT in the "Intern" or "Contractor" job types.
+
+Use the negation of isin() to exclude specific values.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    # Exclude Intern and Contractor job types
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    excluded = ["Intern", "Contractor"]
+    result_df = employees_df.filter(~F.col("job_type").isin(excluded))
+    return result_df`,
+    explanation: `Use ~ (tilde) to negate the isin() condition for NOT IN behavior.`,
+    hints: [
+      "~ negates a condition",
+      "~col.isin([]) = NOT IN",
+      "Alternative: filter out separately"
+    ]
+  },
+  {
+    id: "33",
+    title: "Filter with LIKE Pattern",
+    difficulty: "Easy",
+    category: "Filtering",
+    description: `Filter products where the name starts with "Premium" or ends with "Pro".
+
+Use SQL-like pattern matching with wildcards.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(products_df):
+    # Filter where name starts with "Premium" OR ends with "Pro"
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(products_df):
+    result_df = products_df.filter(
+        F.col("name").like("Premium%") | F.col("name").like("%Pro")
+    )
+    return result_df`,
+    explanation: `Use like() with SQL wildcards: % for any characters, _ for single character.`,
+    hints: [
+      "% matches any sequence of characters",
+      "_ matches exactly one character",
+      "like() is case-sensitive"
+    ]
+  },
+  {
+    id: "34",
+    title: "Filter with BETWEEN",
+    difficulty: "Easy",
+    category: "Filtering",
+    description: `Filter orders where the order_amount is between 100 and 1000 (inclusive).
+
+Use the between() method for range filtering.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(orders_df):
+    # Filter orders with amount between 100 and 1000
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(orders_df):
+    result_df = orders_df.filter(F.col("order_amount").between(100, 1000))
+    return result_df`,
+    explanation: `between(lower, upper) checks if value is within range, inclusive on both ends.`,
+    hints: [
+      "between() is inclusive on both ends",
+      "Alternative: (col >= x) & (col <= y)",
+      "Works with numbers, dates, strings"
+    ]
+  },
+
+  // ============= ADVANCED AGGREGATIONS =============
+  {
+    id: "35",
+    title: "Count Distinct Values",
+    difficulty: "Medium",
+    category: "Aggregations",
+    description: `For each department, count the number of unique job titles.
+
+**employees_df Schema:**
+| Column Name | Data Type |
+|-------------|-----------|
+| emp_id      | integer   |
+| name        | string    |
+| department  | string    |
+| job_title   | string    |
+
+Return department and unique_titles count.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    # Count distinct job_titles per department
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    result_df = employees_df.groupBy("department").agg(
+        F.countDistinct("job_title").alias("unique_titles")
+    )
+    return result_df`,
+    explanation: `countDistinct() counts unique values, unlike count() which counts all rows.`,
+    hints: [
+      "countDistinct() for unique counts",
+      "count() counts all including duplicates",
+      "approx_count_distinct() for large datasets"
+    ]
+  },
+  {
+    id: "36",
+    title: "Conditional Aggregation",
+    difficulty: "Medium",
+    category: "Aggregations",
+    description: `Calculate totals with conditions:
+- \`high_value_sales\`: sum of amount where amount > 1000
+- \`low_value_sales\`: sum of amount where amount <= 1000
+
+Group by region.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(sales_df):
+    # Conditional sums based on amount threshold
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(sales_df):
+    result_df = sales_df.groupBy("region").agg(
+        F.sum(F.when(F.col("amount") > 1000, F.col("amount")).otherwise(0)).alias("high_value_sales"),
+        F.sum(F.when(F.col("amount") <= 1000, F.col("amount")).otherwise(0)).alias("low_value_sales")
+    )
+    return result_df`,
+    explanation: `Use F.when().otherwise() inside aggregation functions for conditional aggregations.`,
+    hints: [
+      "when() creates conditional column",
+      "otherwise() handles the else case",
+      "Combine with sum(), count(), etc."
+    ]
+  },
+  {
+    id: "37",
+    title: "First and Last Values",
+    difficulty: "Medium",
+    category: "Aggregations",
+    description: `For each customer, get their first and last order dates.
+
+Group by customer_id and return:
+- \`first_order\`: earliest order_date
+- \`last_order\`: latest order_date`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(orders_df):
+    # Get first and last order dates per customer
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(orders_df):
+    result_df = orders_df.groupBy("customer_id").agg(
+        F.min("order_date").alias("first_order"),
+        F.max("order_date").alias("last_order")
+    )
+    return result_df`,
+    explanation: `Use min() for first/earliest and max() for last/latest when dealing with dates or ordered values.`,
+    hints: [
+      "min() gives earliest date",
+      "max() gives latest date",
+      "Works with any orderable type"
+    ]
+  },
+  {
+    id: "38",
+    title: "Collect List Aggregation",
+    difficulty: "Medium",
+    category: "Aggregations",
+    description: `Group orders by customer and collect all product names into an array.
+
+**orders_df:**
+| customer_id | product_name |
+|-------------|--------------|
+| 1           | Laptop       |
+| 1           | Mouse        |
+| 2           | Keyboard     |
+
+**Expected Output:**
+| customer_id | products           |
+|-------------|--------------------|
+| 1           | [Laptop, Mouse]    |
+| 2           | [Keyboard]         |`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(orders_df):
+    # Collect product names into array per customer
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(orders_df):
+    result_df = orders_df.groupBy("customer_id").agg(
+        F.collect_list("product_name").alias("products")
+    )
+    return result_df`,
+    explanation: `collect_list() aggregates values into an array, preserving duplicates. collect_set() removes duplicates.`,
+    hints: [
+      "collect_list() includes duplicates",
+      "collect_set() removes duplicates",
+      "Result is an array column"
+    ]
+  },
+
+  // ============= ADVANCED JOINS =============
+  {
+    id: "39",
+    title: "Anti Join (Exclude Matches)",
+    difficulty: "Medium",
+    category: "Joins",
+    description: `Find all customers who have never placed an order.
+
+Use a left anti join to find customers in customers_df who don't have any matching records in orders_df.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(customers_df, orders_df):
+    # Find customers with no orders (anti join)
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(customers_df, orders_df):
+    result_df = customers_df.join(
+        orders_df,
+        customers_df.customer_id == orders_df.customer_id,
+        "left_anti"
+    )
+    return result_df`,
+    explanation: `left_anti join returns rows from the left DataFrame that have no match in the right DataFrame.`,
+    hints: [
+      "left_anti = NOT EXISTS in SQL",
+      "Returns only non-matching left rows",
+      "No columns from right DataFrame"
+    ]
+  },
+  {
+    id: "40",
+    title: "Semi Join (Filter by Existence)",
+    difficulty: "Medium",
+    category: "Joins",
+    description: `Find all customers who have placed at least one order.
+
+Use a left semi join to filter customers_df to only those with matching records in orders_df.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(customers_df, orders_df):
+    # Find customers who have orders (semi join)
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(customers_df, orders_df):
+    result_df = customers_df.join(
+        orders_df,
+        customers_df.customer_id == orders_df.customer_id,
+        "left_semi"
+    )
+    return result_df`,
+    explanation: `left_semi join returns rows from the left DataFrame that have at least one match in the right DataFrame.`,
+    hints: [
+      "left_semi = EXISTS in SQL",
+      "Returns only matching left rows",
+      "No columns from right DataFrame added"
+    ]
+  },
+  {
+    id: "41",
+    title: "Cross Join (Cartesian Product)",
+    difficulty: "Medium",
+    category: "Joins",
+    description: `Create all possible combinations of products and colors.
+
+**products_df:** product_id, name
+**colors_df:** color_id, color_name
+
+Generate every product-color combination.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(products_df, colors_df):
+    # Create all product-color combinations
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(products_df, colors_df):
+    result_df = products_df.crossJoin(colors_df)
+    return result_df`,
+    explanation: `crossJoin() creates a Cartesian product - every row from left paired with every row from right.`,
+    hints: [
+      "crossJoin() = CROSS JOIN in SQL",
+      "Result size = left_rows * right_rows",
+      "Use sparingly on large datasets"
+    ]
+  },
+  {
+    id: "42",
+    title: "Self Join",
+    difficulty: "Hard",
+    category: "Joins",
+    description: `Find employee-manager pairs by joining the employees table to itself.
+
+Each employee has a manager_id that references another employee's emp_id.
+
+Return employee name and their manager's name.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    # Self join to get employee and manager names
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    managers_df = employees_df.alias("managers")
+    employees_alias = employees_df.alias("employees")
+    
+    result_df = employees_alias.join(
+        managers_df,
+        F.col("employees.manager_id") == F.col("managers.emp_id"),
+        "left"
+    ).select(
+        F.col("employees.name").alias("employee_name"),
+        F.col("managers.name").alias("manager_name")
+    )
+    return result_df`,
+    explanation: `Use alias() to create distinct references to the same DataFrame for self-joins.`,
+    hints: [
+      "alias() creates a reference name",
+      "Use col('alias.column') syntax",
+      "Left join keeps employees without managers"
+    ]
+  },
+
+  // ============= MORE WINDOW FUNCTIONS =============
+  {
+    id: "43",
+    title: "Percent Rank",
+    difficulty: "Hard",
+    category: "Window Functions",
+    description: `Calculate the percentile rank of each employee's salary within their department.
+
+percent_rank ranges from 0 to 1 (top earner = 1).`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(employees_df):
+    # Add percent_rank of salary within department
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(employees_df):
+    window_spec = Window.partitionBy("department").orderBy("salary")
+    
+    result_df = employees_df.withColumn(
+        "salary_percentile",
+        F.percent_rank().over(window_spec)
+    )
+    return result_df`,
+    explanation: `percent_rank() calculates relative rank as (rank-1)/(count-1), ranging from 0 to 1.`,
+    hints: [
+      "percent_rank() ranges 0 to 1",
+      "First row = 0, last row = 1",
+      "Useful for percentile calculations"
+    ]
+  },
+  {
+    id: "44",
+    title: "NTile Buckets",
+    difficulty: "Hard",
+    category: "Window Functions",
+    description: `Divide employees into 4 salary quartiles within each department.
+
+Add a \`salary_quartile\` column with values 1-4 (1 = lowest quartile).`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(employees_df):
+    # Divide into 4 salary quartiles per department
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(employees_df):
+    window_spec = Window.partitionBy("department").orderBy("salary")
+    
+    result_df = employees_df.withColumn(
+        "salary_quartile",
+        F.ntile(4).over(window_spec)
+    )
+    return result_df`,
+    explanation: `ntile(n) divides rows into n equal buckets. Useful for creating quartiles, deciles, etc.`,
+    hints: [
+      "ntile(4) creates quartiles",
+      "ntile(10) creates deciles",
+      "Rows are evenly distributed"
+    ]
+  },
+  {
+    id: "45",
+    title: "Moving Average",
+    difficulty: "Hard",
+    category: "Window Functions",
+    description: `Calculate a 3-day moving average of sales for each product.
+
+Include the current row and the 2 preceding rows in the average.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(sales_df):
+    # Calculate 3-day moving average per product
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(sales_df):
+    window_spec = Window.partitionBy("product_id") \\
+                        .orderBy("sale_date") \\
+                        .rowsBetween(-2, 0)
+    
+    result_df = sales_df.withColumn(
+        "moving_avg_3day",
+        F.avg("amount").over(window_spec)
+    )
+    return result_df`,
+    explanation: `rowsBetween(-2, 0) includes 2 preceding rows and current row for a 3-day window.`,
+    hints: [
+      "rowsBetween defines the frame",
+      "-2, 0 = previous 2 rows + current",
+      "Use avg() for moving average"
+    ]
+  },
+  {
+    id: "46",
+    title: "First and Last Value in Window",
+    difficulty: "Hard",
+    category: "Window Functions",
+    description: `For each order, show the first and last product ordered by the same customer.
+
+Add columns: \`first_product\` and \`last_product\` (based on order_date).`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(orders_df):
+    # Add first and last product per customer
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+def etl(orders_df):
+    window_spec = Window.partitionBy("customer_id") \\
+                        .orderBy("order_date") \\
+                        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    
+    result_df = orders_df.withColumn(
+        "first_product",
+        F.first("product_name").over(window_spec)
+    ).withColumn(
+        "last_product",
+        F.last("product_name").over(window_spec)
+    )
+    return result_df`,
+    explanation: `Use unboundedPreceding to unboundedFollowing to consider the entire partition for first/last values.`,
+    hints: [
+      "first() gets first value in window",
+      "last() gets last value in window",
+      "Need full window frame for these"
+    ]
+  },
+
+  // ============= MORE STRING FUNCTIONS =============
+  {
+    id: "47",
+    title: "Trim and Pad Strings",
+    difficulty: "Easy",
+    category: "String Functions",
+    description: `Clean up string data:
+- Trim whitespace from \`name\`
+- Left-pad \`employee_id\` to 6 characters with zeros
+
+Example: "42" becomes "000042"`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    # Trim name and left-pad employee_id
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    result_df = employees_df.withColumn(
+        "name",
+        F.trim(F.col("name"))
+    ).withColumn(
+        "employee_id",
+        F.lpad(F.col("employee_id"), 6, "0")
+    )
+    return result_df`,
+    explanation: `trim() removes leading/trailing whitespace. lpad() left-pads to specified length.`,
+    hints: [
+      "trim() removes whitespace",
+      "ltrim()/rtrim() for one side only",
+      "lpad(col, len, char) left-pads"
+    ]
+  },
+  {
+    id: "48",
+    title: "Replace and Translate",
+    difficulty: "Medium",
+    category: "String Functions",
+    description: `Clean phone numbers:
+- Replace all dashes with empty string
+- Remove parentheses
+
+Input: "(555) 123-4567" → Output: "555 1234567"`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(contacts_df):
+    # Clean phone numbers: remove dashes and parentheses
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(contacts_df):
+    result_df = contacts_df.withColumn(
+        "phone",
+        F.regexp_replace(
+            F.regexp_replace(F.col("phone"), "-", ""),
+            "[()]",
+            ""
+        )
+    )
+    return result_df`,
+    explanation: `regexp_replace() replaces patterns. Chain calls for multiple replacements.`,
+    hints: [
+      "regexp_replace(col, pattern, replacement)",
+      "Use regex patterns like [()]",
+      "Chain for multiple replacements"
+    ]
+  },
+  {
+    id: "49",
+    title: "Substring and Length",
+    difficulty: "Easy",
+    category: "String Functions",
+    description: `Extract the first 3 characters of the product code as \`category_code\`, and add the total length as \`code_length\`.
+
+Example: "ELEC-12345" → category_code: "ELE", code_length: 10`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(products_df):
+    # Extract first 3 chars and add length
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(products_df):
+    result_df = products_df.withColumn(
+        "category_code",
+        F.substring(F.col("product_code"), 1, 3)
+    ).withColumn(
+        "code_length",
+        F.length(F.col("product_code"))
+    )
+    return result_df`,
+    explanation: `substring(col, start, length) extracts characters. Position is 1-based. length() returns string length.`,
+    hints: [
+      "substring() is 1-indexed",
+      "substring(col, 1, 3) = first 3 chars",
+      "length() returns character count"
+    ]
+  },
+
+  // ============= MORE DATE FUNCTIONS =============
+  {
+    id: "50",
+    title: "Parse String to Date",
+    difficulty: "Medium",
+    category: "Date Functions",
+    description: `Convert a string column with format "MM/dd/yyyy" to a proper date type.
+
+Example: "01/15/2024" → 2024-01-15 (date type)`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(events_df):
+    # Parse date_string to date type
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(events_df):
+    result_df = events_df.withColumn(
+        "event_date",
+        F.to_date(F.col("date_string"), "MM/dd/yyyy")
+    )
+    return result_df`,
+    explanation: `to_date() parses strings to dates using the specified format pattern.`,
+    hints: [
+      "to_date(col, format) parses strings",
+      "MM = 2-digit month, dd = 2-digit day",
+      "to_timestamp() for datetime values"
+    ]
+  },
+  {
+    id: "51",
+    title: "Get Day of Week and Weekend Flag",
+    difficulty: "Medium",
+    category: "Date Functions",
+    description: `Add columns:
+- \`day_of_week\`: day name (Monday, Tuesday, etc.)
+- \`is_weekend\`: true if Saturday or Sunday
+
+Use date_format and conditional logic.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(sales_df):
+    # Add day_of_week name and is_weekend flag
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(sales_df):
+    result_df = sales_df.withColumn(
+        "day_of_week",
+        F.date_format("sale_date", "EEEE")
+    ).withColumn(
+        "is_weekend",
+        F.dayofweek("sale_date").isin([1, 7])
+    )
+    return result_df`,
+    explanation: `date_format with 'EEEE' gives full day name. dayofweek() returns 1=Sunday through 7=Saturday.`,
+    hints: [
+      "EEEE = full day name",
+      "dayofweek(): 1=Sun, 7=Sat",
+      "Use isin() to check weekend days"
+    ]
+  },
+  {
+    id: "52",
+    title: "Months Between Dates",
+    difficulty: "Medium",
+    category: "Date Functions",
+    description: `Calculate the number of months between each employee's hire_date and today.
+
+Round to whole months and name the column \`tenure_months\`.`,
+    starterCode: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    # Calculate months between hire_date and today
+    # Your code here
+    
+    pass`,
+    solution: `from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+def etl(employees_df):
+    result_df = employees_df.withColumn(
+        "tenure_months",
+        F.round(F.months_between(F.current_date(), F.col("hire_date")))
+    )
+    return result_df`,
+    explanation: `months_between(end, start) calculates months between two dates. Wrap in round() for whole months.`,
+    hints: [
+      "months_between(end, start)",
+      "Result can be fractional",
+      "round() for whole months"
+    ]
+  },
 ];
 
 export const categories: Category[] = [
