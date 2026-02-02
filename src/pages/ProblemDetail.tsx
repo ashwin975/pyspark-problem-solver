@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -7,8 +7,6 @@ import {
   ResizablePanelGroup 
 } from "@/components/ui/resizable";
 import CodeEditor from "@/components/CodeEditor";
-import ProblemDescription from "@/components/ProblemDescription";
-import { getProblemById, problems } from "@/data/problems";
 import { 
   Play, 
   RotateCcw, 
@@ -21,65 +19,114 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import DifficultyBadge from "@/components/DifficultyBadge";
+import { FormattedDescription } from "@/components/MarkdownTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
+
+interface Problem {
+  id: string;
+  title: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  category: string;
+  description: string;
+  starter_code: string;
+  test_setup: string;
+  test_validation: string;
+  hints: string[];
+  solution: string;
+}
 
 const ProblemDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const problem = getProblemById(id || "");
   const { toast } = useToast();
   
-  const [code, setCode] = useState(problem?.starterCode || "");
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState("");
   const [result, setResult] = useState<{
     status: "success" | "error" | null;
     message: string;
   }>({ status: null, message: "" });
+  const [revealedHints, setRevealedHints] = useState<number[]>([]);
 
-  if (!problem) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Problem Not Found</h1>
-          <Button asChild>
-            <Link to="/problems">Back to Problems</Link>
-          </Button>
-        </div>
-      </div>
+  // Fetch problem data
+  useEffect(() => {
+    const fetchProblem = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/problems/${id}.json`);
+        if (!response.ok) {
+          throw new Error("Problem not found");
+        }
+        const data: Problem = await response.json();
+        setProblem(data);
+        setCode(data.starter_code);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load problem");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProblem();
+    }
+  }, [id]);
+
+  const toggleHint = (index: number) => {
+    setRevealedHints(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
     );
-  }
-
-  const currentIndex = problems.findIndex(p => p.id === id);
-  const prevProblem = currentIndex > 0 ? problems[currentIndex - 1] : null;
-  const nextProblem = currentIndex < problems.length - 1 ? problems[currentIndex + 1] : null;
+  };
 
   const handleRun = async () => {
+    if (!problem) return;
+    
     setIsRunning(true);
     setResult({ status: null, message: "" });
     setOutput("Running PySpark code...");
 
+    // Combine test_setup + user code + test_validation
+    const fullScript = `${problem.test_setup}
+
+# User Solution
+${code}
+
+# Test Validation
+${problem.test_validation}`;
+
     try {
-      // Connect to local Docker PySpark engine
       const response = await fetch("http://localhost:8080/execute", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code: code }),
+        body: JSON.stringify({ code: fullScript }),
       });
 
       const data = await response.json();
 
-      // Display stdout if success, or stderr if failed
       if (data.stdout) {
         setOutput(data.stdout);
+        const passed = data.stdout.includes("✅ TEST PASSED!");
         setResult({
-          status: "success",
-          message: "Code executed successfully!"
+          status: passed ? "success" : "error",
+          message: passed ? "All tests passed!" : "Check the output for details."
         });
-        toast({
-          title: "Success!",
-          description: "Your code ran successfully.",
-        });
+        if (passed) {
+          toast({
+            title: "Success!",
+            description: "All tests passed!",
+          });
+        }
       } else if (data.stderr) {
         setOutput(data.stderr);
         setResult({
@@ -106,14 +153,42 @@ const ProblemDetail = () => {
   };
 
   const handleReset = () => {
-    setCode(problem.starterCode);
-    setResult({ status: null, message: "" });
-    setOutput("");
-    toast({
-      title: "Code Reset",
-      description: "Your code has been reset to the starter template.",
-    });
+    if (problem) {
+      setCode(problem.starter_code);
+      setResult({ status: null, message: "" });
+      setOutput("");
+      toast({
+        title: "Code Reset",
+        description: "Your code has been reset to the starter template.",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !problem) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Problem Not Found</h1>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button asChild>
+            <Link to="/problems">Back to Problems</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentId = parseInt(id || "1");
+  const prevId = currentId > 1 ? currentId - 1 : null;
+  const nextId = currentId + 1; // We'll handle 404 on the next page if it doesn't exist
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -129,22 +204,20 @@ const ProblemDetail = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {prevProblem && (
+          {prevId && (
             <Button variant="ghost" size="sm" asChild>
-              <Link to={`/problem/${prevProblem.id}`}>
+              <Link to={`/problems/${prevId}`}>
                 <ChevronLeft className="h-4 w-4" />
                 Prev
               </Link>
             </Button>
           )}
-          {nextProblem && (
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/problem/${nextProblem.id}`}>
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          )}
+          <Button variant="ghost" size="sm" asChild>
+            <Link to={`/problems/${nextId}`}>
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -152,7 +225,111 @@ const ProblemDetail = () => {
       <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
         {/* Left Panel - Problem Description */}
         <ResizablePanel defaultSize={40} minSize={25} maxSize={60}>
-          <ProblemDescription problem={problem} />
+          <div className="flex h-full flex-col overflow-hidden">
+            <Tabs defaultValue="description" className="flex h-full flex-col">
+              <TabsList className="w-full justify-start rounded-none border-b bg-transparent px-4">
+                <TabsTrigger 
+                  value="description" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                >
+                  Description
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="hints"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                >
+                  Hints ({problem.hints.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="solution"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                >
+                  Solution
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="description" className="flex-1 overflow-auto p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold">{problem.title}</h2>
+                    <DifficultyBadge difficulty={problem.difficulty} />
+                  </div>
+                  
+                  <div className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                    {problem.category}
+                  </div>
+
+                  <FormattedDescription text={problem.description} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="hints" className="flex-1 overflow-auto p-4">
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Click on a hint to reveal it. Try to solve the problem before looking at hints!
+                  </p>
+                  {problem.hints.map((hint, index) => (
+                    <Card 
+                      key={index}
+                      className={cn(
+                        "cursor-pointer transition-all",
+                        revealedHints.includes(index) 
+                          ? "border-primary/50" 
+                          : "hover:border-primary/30"
+                      )}
+                      onClick={() => toggleHint(index)}
+                    >
+                      <CardHeader className="py-3 px-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Lightbulb className={cn(
+                              "h-4 w-4",
+                              revealedHints.includes(index) ? "text-accent" : "text-muted-foreground"
+                            )} />
+                            <span className="text-sm font-medium">Hint {index + 1}</span>
+                          </div>
+                          {revealedHints.includes(index) ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </CardHeader>
+                      {revealedHints.includes(index) && (
+                        <CardContent className="pt-0 pb-3 px-4">
+                          <p className="text-sm text-foreground/80">{hint}</p>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="solution" className="flex-1 overflow-auto p-4">
+                <div className="space-y-4">
+                  <div className="rounded-lg bg-accent/10 border border-accent/30 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Lightbulb className="h-4 w-4 text-accent" />
+                      <span className="text-sm font-medium text-accent">Pro Tip</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Try solving the problem yourself first! Looking at solutions too early can hinder your learning.
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-muted border border-border overflow-hidden">
+                    <div className="border-b border-border bg-secondary px-4 py-2 text-xs text-muted-foreground">
+                      solution.py
+                    </div>
+                    <pre className="p-4 text-sm overflow-x-auto bg-card">
+                      <code className="text-foreground font-mono whitespace-pre-wrap">
+                        {problem.solution}
+                      </code>
+                    </pre>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
         </ResizablePanel>
 
         <ResizableHandle withHandle />
@@ -218,7 +395,7 @@ const ProblemDetail = () => {
                         "font-medium",
                         result.status === "success" ? "text-success" : "text-destructive"
                       )}>
-                        {result.status === "success" ? "Executed Successfully" : "Execution Failed"}
+                        {result.status === "success" ? "Tests Passed" : "Tests Failed"}
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">

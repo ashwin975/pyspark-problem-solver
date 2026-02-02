@@ -1,0 +1,16 @@
+{
+  "id": "2",
+  "title": "Calculate Average Age",
+  "difficulty": "Easy",
+  "category": "Aggregations",
+  "description": "# Calculate Average Age\n\nGiven a DataFrame with columns `Name` and `Age`, calculate the average age of all people.\n\n## Input Schema\n\n| Column | Type |\n|--------|------|\n| Name | string |\n| Age | integer |\n\n## Expected Output\n\nA DataFrame with a single column `avg_age` containing the average age.",
+  "starter_code": "def solve(df):\n    # Calculate the average age\n    # return df.agg(...)\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [('Alice', 20), ('Bob', 30), ('Charlie', 40)]\ncolumns = ['Name', 'Age']\ndf = spark.createDataFrame(data, columns)",
+  "test_validation": "result = solve(df)\nassert result is not None, 'Function returned None'\nassert 'avg_age' in result.columns, 'Missing avg_age column'\navg_value = result.collect()[0]['avg_age']\nassert avg_value == 30.0, f'Expected 30.0, got {avg_value}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use the agg() method with F.avg()",
+    "Don't forget to alias the result column as 'avg_age'",
+    "df.agg(F.avg('Age').alias('avg_age'))"
+  ],
+  "solution": "def solve(df):\n    return df.agg(F.avg('Age').alias('avg_age'))"
+}
