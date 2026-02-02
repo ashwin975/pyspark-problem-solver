@@ -1,0 +1,16 @@
+{
+  "id": "17",
+  "title": "Total Rental Income",
+  "difficulty": "Hard",
+  "category": "Pivoting",
+  "description": "**Rental Properties**\n\nYou have: `properties_df` (property_id, landlord_id, property_type, rent, square_feet, city) and `landlords_df` (landlord_id, first_name, last_name, email, phone).\n\nCalculate total rental income per landlord. Return: landlord_id, landlord_name (full name), total_rental_income.",
+  "starter_code": "def etl(properties_df, landlords_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nproperties_data = [\n    ('P1', 'L1', 'Apartment', 2000.0, 1000, 'NYC'),\n    ('P2', 'L1', 'House', 3500.0, 2000, 'NYC'),\n    ('P3', 'L2', 'Apartment', 1500.0, 800, 'LA')\n]\nproperties_df = spark.createDataFrame(properties_data, ['property_id', 'landlord_id', 'property_type', 'rent', 'square_feet', 'city'])\n\nlandlords_data = [\n    ('L1', 'John', 'Doe', 'john@email.com', '555-0001'),\n    ('L2', 'Jane', 'Smith', 'jane@email.com', '555-0002')\n]\nlandlords_df = spark.createDataFrame(landlords_data, ['landlord_id', 'first_name', 'last_name', 'email', 'phone'])",
+  "test_validation": "result = etl(properties_df, landlords_df)\nassert result is not None, 'Function returned None'\nassert 'landlord_id' in result.columns, 'Missing landlord_id column'\nassert 'landlord_name' in result.columns, 'Missing landlord_name column'\nassert 'total_rental_income' in result.columns, 'Missing total_rental_income column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Sum rent grouped by landlord_id",
+    "Join with landlords for name info",
+    "Use F.concat() for full name"
+  ],
+  "solution": "def etl(properties_df, landlords_df):\n    rental_agg = properties_df.groupBy('landlord_id').agg(\n        F.sum('rent').alias('total_rental_income')\n    )\n    \n    result = rental_agg.join(landlords_df, 'landlord_id')\n    \n    result = result.select(\n        'landlord_id',\n        F.concat(F.col('first_name'), F.lit(' '), F.col('last_name')).alias('landlord_name'),\n        F.col('total_rental_income').cast('float')\n    )\n    \n    return result.orderBy('landlord_id')"
+}

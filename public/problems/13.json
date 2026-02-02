@@ -1,0 +1,16 @@
+{
+  "id": "13",
+  "title": "Products Sales Summary",
+  "difficulty": "Hard",
+  "category": "Joins",
+  "description": "**Retail Data**\n\nYou have three DataFrames: `products`, `sales`, and `inventory`.\n\n**products:** product_id, product_name, category\n**sales:** product_id, quantity, revenue\n**inventory:** product_id, stock\n\nJoin all three and calculate totals for each product:\n- total_quantity (from sales)\n- total_revenue (from sales)  \n- total_stock (from inventory)\n\nUse 0 for products with no sales or inventory.",
+  "starter_code": "def etl(products, sales, inventory):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nproducts_data = [('P1', 'Widget', 'Electronics'), ('P2', 'Gadget', 'Electronics'), ('P3', 'Tool', 'Hardware')]\nproducts = spark.createDataFrame(products_data, ['product_id', 'product_name', 'category'])\n\nsales_data = [('P1', 10, 100.0), ('P1', 5, 50.0), ('P2', 20, 200.0)]\nsales = spark.createDataFrame(sales_data, ['product_id', 'quantity', 'revenue'])\n\ninventory_data = [('P1', 50), ('P2', 30), ('P1', 25)]\ninventory = spark.createDataFrame(inventory_data, ['product_id', 'stock'])",
+  "test_validation": "result = etl(products, sales, inventory)\nassert result is not None, 'Function returned None'\nassert 'total_quantity' in result.columns or 'product_id' in result.columns, 'Missing expected columns'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Aggregate sales and inventory separately first",
+    "Use left joins to keep all products",
+    "Use F.coalesce() to replace nulls with 0"
+  ],
+  "solution": "def etl(products, sales, inventory):\n    sales_agg = sales.groupby('product_id').agg(\n        F.sum('quantity').alias('total_quantity'),\n        F.sum('revenue').alias('total_revenue')\n    )\n    \n    stock_agg = inventory.groupby('product_id').agg(\n        F.sum('stock').alias('total_stock')\n    )\n    \n    result = products.join(sales_agg, 'product_id', 'left') \\\n        .join(stock_agg, 'product_id', 'left')\n    \n    result = result.withColumn('total_quantity', F.coalesce(F.col('total_quantity'), F.lit(0))) \\\n        .withColumn('total_revenue', F.coalesce(F.col('total_revenue'), F.lit(0))) \\\n        .withColumn('total_stock', F.coalesce(F.col('total_stock'), F.lit(0)))\n    \n    return result"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "42",
+  "title": "Dense Rank",
+  "difficulty": "Medium",
+  "category": "Window Functions",
+  "description": "Apply dense ranking (no gaps) to values.\n\nYou have a DataFrame with `category` and `score` columns. Add a `dense_rank` column that ranks scores within each category (highest first) without gaps.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('A', 100), ('A', 100), ('A', 80),\n    ('B', 90), ('B', 85), ('B', 85)\n]\ninput_df = spark.createDataFrame(data, ['category', 'score'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'dense_rank' in result.columns, 'Missing dense_rank column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "F.dense_rank() vs F.rank()",
+    "dense_rank has no gaps for ties"
+  ],
+  "solution": "def etl(input_df):\n    window = W.partitionBy('category').orderBy(F.desc('score'))\n    return input_df.withColumn('dense_rank', F.dense_rank().over(window))"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "5",
+  "title": "Clean Financial Transactions",
+  "difficulty": "Hard",
+  "category": "Data Cleaning",
+  "description": "**Financial Data Cleaning**\n\nYou have two DataFrames: `df_transactions` and `df_clients`.\n\n**df_transactions Schema:**\n| Column        | Type    |\n|---------------|---------|\n| TransactionID | integer |\n| ClientID      | integer |\n| Date          | string  |\n| Amount        | float   |\n\n**df_clients Schema:**\n| Column     | Type    |\n|------------|---------|\n| ClientID   | integer |\n| ClientName | string  |\n| Industry   | string  |\n\nClean the data by:\n1. Removing duplicate TransactionIDs (keep first)\n2. Removing duplicate ClientIDs (keep first)\n3. Filtering out invalid IDs (must be > 0)\n4. Filtering out invalid date formats\n5. Join the cleaned DataFrames on ClientID",
+  "starter_code": "def etl(df_transactions, df_clients):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ntrans_data = [\n    (1, 101, '2023-01-15', 500.0),\n    (2, 102, '2023-02-20', 750.0),\n    (1, 101, '2023-01-15', 500.0),\n    (3, 103, 'invalid-date', 300.0),\n    (4, -1, '2023-03-10', 400.0)\n]\ndf_transactions = spark.createDataFrame(trans_data, ['TransactionID', 'ClientID', 'Date', 'Amount'])\n\nclient_data = [\n    (101, 'Acme Corp', 'Tech'),\n    (102, 'Beta Inc', 'Finance'),\n    (101, 'Acme Corp Duplicate', 'Tech'),\n    (103, 'Gamma LLC', 'Retail')\n]\ndf_clients = spark.createDataFrame(client_data, ['ClientID', 'ClientName', 'Industry'])",
+  "test_validation": "result = etl(df_transactions, df_clients)\nassert result is not None, 'Function returned None'\nassert result.filter(F.col('TransactionID') <= 0).count() == 0, 'Found invalid TransactionIDs'\nassert result.filter(F.col('ClientID') <= 0).count() == 0, 'Found invalid ClientIDs'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use row_number() for deduplication",
+    "Use rlike() for date format validation",
+    "Filter invalid IDs before joining"
+  ],
+  "solution": "def etl(df_transactions, df_clients):\n    window_trans = W.partitionBy('TransactionID').orderBy('TransactionID')\n    window_clients = W.partitionBy('ClientID').orderBy('ClientID')\n    \n    df_transactions = (\n        df_transactions.withColumn('rn', F.row_number().over(window_trans))\n        .where(F.col('rn') == 1)\n        .drop('rn')\n    )\n    df_clients = (\n        df_clients.withColumn('rn', F.row_number().over(window_clients))\n        .where(F.col('rn') == 1)\n        .drop('rn')\n    )\n    \n    df_transactions = df_transactions.filter(F.col('TransactionID') > 0)\n    df_transactions = df_transactions.filter(\n        F.col('Date').rlike('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')\n    )\n    df_clients = df_clients.filter(F.col('ClientID') > 0)\n    \n    df_cleaned = df_transactions.join(df_clients, on='ClientID', how='inner')\n    \n    return df_cleaned"
+}

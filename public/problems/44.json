@@ -1,0 +1,16 @@
+{
+  "id": "44",
+  "title": "Lead Function",
+  "difficulty": "Medium",
+  "category": "Window Functions",
+  "description": "Access the next row's value.\n\nYou have a DataFrame with `id`, `date`, and `value` columns. Add a `next_value` column containing the value from the next row (ordered by date) within each id.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('ID1', '2023-01-01', 100),\n    ('ID1', '2023-01-02', 150),\n    ('ID1', '2023-01-03', 200),\n    ('ID2', '2023-01-01', 50)\n]\ninput_df = spark.createDataFrame(data, ['id', 'date', 'value'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'next_value' in result.columns, 'Missing next_value column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "F.lead(column, offset)",
+    "Offset 1 gets next row",
+    "Returns null for last row"
+  ],
+  "solution": "def etl(input_df):\n    window = W.partitionBy('id').orderBy('date')\n    return input_df.withColumn('next_value', F.lead('value', 1).over(window))"
+}

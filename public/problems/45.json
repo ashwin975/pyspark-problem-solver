@@ -1,0 +1,15 @@
+{
+  "id": "45",
+  "title": "First and Last Values",
+  "difficulty": "Medium",
+  "category": "Window Functions",
+  "description": "Get first and last values within a window.\n\nYou have a DataFrame with `group`, `date`, and `value` columns. Add `first_val` and `last_val` columns containing the first and last values within each group (ordered by date).",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('G1', '2023-01-01', 100),\n    ('G1', '2023-01-02', 150),\n    ('G1', '2023-01-03', 200),\n    ('G2', '2023-01-01', 50),\n    ('G2', '2023-01-02', 75)\n]\ninput_df = spark.createDataFrame(data, ['group', 'date', 'value'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'first_val' in result.columns, 'Missing first_val column'\nassert 'last_val' in result.columns, 'Missing last_val column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Need unbounded window for true first/last",
+    "rowsBetween defines the frame"
+  ],
+  "solution": "def etl(input_df):\n    window = W.partitionBy('group').orderBy('date').rowsBetween(W.unboundedPreceding, W.unboundedFollowing)\n    return input_df.withColumn('first_val', F.first('value').over(window)) \\\n                   .withColumn('last_val', F.last('value').over(window))"
+}

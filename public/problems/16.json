@@ -1,0 +1,16 @@
+{
+  "id": "16",
+  "title": "Mountain Last Climber",
+  "difficulty": "Hard",
+  "category": "Window Functions",
+  "description": "**Mountain Climbing**\n\nYou have: `mountain_info` (name, height, country, range) and `mountain_climbers` (climber_name, mountain_name, climb_date, climb_time).\n\nFind the last climber for each mountain (most recent climb_date). Return only mountains that have been climbed.\n\n**Output:** mountain_name, last_climber_name, last_climb_date, last_climb_time",
+  "starter_code": "def etl(mountain_info, mountain_climbers):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nmountain_data = [('Everest', 8849, 'Nepal', 'Himalayas'), ('K2', 8611, 'Pakistan', 'Karakoram')]\nmountain_info = spark.createDataFrame(mountain_data, ['name', 'height', 'country', 'range'])\n\nclimbers_data = [\n    ('Alex', 'Everest', '2023-05-10', '06:00'),\n    ('Beth', 'Everest', '2023-05-15', '07:30'),\n    ('Carl', 'K2', '2023-07-20', '05:00'),\n    ('Dana', 'K2', '2023-07-18', '06:00')\n]\nmountain_climbers = spark.createDataFrame(climbers_data, ['climber_name', 'mountain_name', 'climb_date', 'climb_time'])",
+  "test_validation": "result = etl(mountain_info, mountain_climbers)\nassert result is not None, 'Function returned None'\nassert 'mountain_name' in result.columns, 'Missing mountain_name column'\nassert 'last_climber_name' in result.columns, 'Missing last_climber_name column'\nassert result.count() == 2, f'Expected 2 mountains, got {result.count()}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Order by date descending to get latest first",
+    "Use rank() or row_number() to identify first record",
+    "Filter where rank == 1"
+  ],
+  "solution": "def etl(mountain_info, mountain_climbers):\n    window = W.partitionBy('mountain_name').orderBy(\n        F.desc('climb_date'), F.desc('climb_time')\n    )\n    \n    latest_climb = (\n        mountain_climbers.select(\n            '*', F.rank().over(window).alias('rank')\n        )\n        .filter('rank == 1')\n        .drop('rank')\n    )\n    \n    output = latest_climb.select(\n        'mountain_name',\n        F.col('climber_name').alias('last_climber_name'),\n        F.col('climb_date').alias('last_climb_date'),\n        F.col('climb_time').alias('last_climb_time')\n    )\n    \n    return output"
+}

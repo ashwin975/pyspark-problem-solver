@@ -1,0 +1,15 @@
+{
+  "id": "11",
+  "title": "Filter Null Values",
+  "difficulty": "Easy",
+  "category": "Null Handling",
+  "description": "**Movies**\n\nYou have a DataFrame `movies_df` with schema:\n\n| Column Name           | Data Type |\n|-----------------------|-----------|\n| movie_id              | integer   |\n| movie_title           | string    |\n| director_name         | string    |\n| release_date          | date      |\n| box_office_collection | float     |\n| genre                 | string    |\n\nFilter to retain only rows where `box_office_collection` is null.",
+  "starter_code": "def etl(movies_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    (1, 'Movie A', 'Director 1', '2020-01-01', 1000000.0, 'Action'),\n    (2, 'Movie B', 'Director 2', '2021-05-15', None, 'Drama'),\n    (3, 'Movie C', 'Director 1', '2022-08-20', 500000.0, 'Comedy'),\n    (4, 'Movie D', 'Director 3', '2023-03-10', None, 'Horror')\n]\ncolumns = ['movie_id', 'movie_title', 'director_name', 'release_date', 'box_office_collection', 'genre']\nmovies_df = spark.createDataFrame(data, columns)",
+  "test_validation": "result = etl(movies_df)\nassert result is not None, 'Function returned None'\nassert result.count() == 2, f'Expected 2 rows with null box_office, got {result.count()}'\nassert result.filter(F.col('box_office_collection').isNotNull()).count() == 0, 'Found non-null box office values'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use F.isnull('column_name') to check for nulls",
+    "Alternative: F.col('column').isNull()"
+  ],
+  "solution": "def etl(movies_df):\n    null_box_office_df = movies_df.filter(\n        F.isnull('box_office_collection')\n    )\n    return null_box_office_df"
+}

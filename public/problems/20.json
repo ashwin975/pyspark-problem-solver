@@ -1,0 +1,16 @@
+{
+  "id": "20",
+  "title": "Rank Products",
+  "difficulty": "Medium",
+  "category": "Window Functions",
+  "description": "Rank products by sales within each category.\n\nYou have a DataFrame with columns: product_id, category, sales. Add a `rank` column that ranks products by sales (highest first) within each category.",
+  "starter_code": "def etl(products_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('P1', 'Electronics', 1000),\n    ('P2', 'Electronics', 1500),\n    ('P3', 'Electronics', 800),\n    ('P4', 'Clothing', 500),\n    ('P5', 'Clothing', 700)\n]\nproducts_df = spark.createDataFrame(data, ['product_id', 'category', 'sales'])",
+  "test_validation": "result = etl(products_df)\nassert result is not None, 'Function returned None'\nassert 'rank' in result.columns, 'Missing rank column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Partition by category",
+    "Order by sales descending",
+    "Apply F.rank()"
+  ],
+  "solution": "def etl(products_df):\n    window = W.partitionBy('category').orderBy(F.desc('sales'))\n    return products_df.withColumn('rank', F.rank().over(window))"
+}

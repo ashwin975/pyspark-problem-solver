@@ -1,0 +1,15 @@
+{
+  "id": "25",
+  "title": "Fill Null Values",
+  "difficulty": "Easy",
+  "category": "Null Handling",
+  "description": "Fill null values with defaults: 0 for numeric, 'Unknown' for string.\n\nYou have a DataFrame with `amount` (integer) and `name` (string) columns that may contain nulls. Fill the nulls with appropriate defaults.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [(100, 'Alice'), (None, 'Bob'), (200, None), (None, None)]\ninput_df = spark.createDataFrame(data, ['amount', 'name'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert result.filter(F.col('amount').isNull()).count() == 0, 'Found null amounts'\nassert result.filter(F.col('name').isNull()).count() == 0, 'Found null names'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "fillna accepts a dictionary",
+    "Keys are column names, values are defaults"
+  ],
+  "solution": "def etl(input_df):\n    return input_df.fillna({'amount': 0, 'name': 'Unknown'})"
+}

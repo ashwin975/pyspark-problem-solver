@@ -1,0 +1,15 @@
+{
+  "id": "31",
+  "title": "Group By with Multiple Aggregations",
+  "difficulty": "Medium",
+  "category": "Aggregations",
+  "description": "Calculate min, max, avg, and count for grouped data.\n\nYou have a DataFrame with `category` and `value` columns. Group by category and calculate min_val, max_val, avg_val, and count for each category.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('A', 10), ('A', 20), ('A', 30),\n    ('B', 15), ('B', 25),\n    ('C', 100)\n]\ninput_df = spark.createDataFrame(data, ['category', 'value'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'min_val' in result.columns, 'Missing min_val column'\nassert 'max_val' in result.columns, 'Missing max_val column'\nassert 'avg_val' in result.columns, 'Missing avg_val column'\nassert 'count' in result.columns, 'Missing count column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Pass multiple aggregations to agg()",
+    "Use alias() for column names"
+  ],
+  "solution": "def etl(input_df):\n    return input_df.groupBy('category').agg(\n        F.min('value').alias('min_val'),\n        F.max('value').alias('max_val'),\n        F.avg('value').alias('avg_val'),\n        F.count('value').alias('count')\n    )"
+}

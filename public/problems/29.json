@@ -1,0 +1,15 @@
+{
+  "id": "29",
+  "title": "Left Join with Null Handling",
+  "difficulty": "Medium",
+  "category": "Joins",
+  "description": "Left join and replace nulls from right table with defaults.\n\nYou have two DataFrames df1 and df2 with a `key` column. Perform a left join and fill any null values in `right_col` from df2 with 'N/A'.",
+  "starter_code": "def etl(df1, df2):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata1 = [('K1', 'A'), ('K2', 'B'), ('K3', 'C')]\ndf1 = spark.createDataFrame(data1, ['key', 'left_col'])\n\ndata2 = [('K1', 'X'), ('K2', 'Y')]\ndf2 = spark.createDataFrame(data2, ['key', 'right_col'])",
+  "test_validation": "result = etl(df1, df2)\nassert result is not None, 'Function returned None'\nassert result.count() == 3, f'Expected 3 rows from left join, got {result.count()}'\nassert result.filter(F.col('right_col').isNull()).count() == 0, 'Found null values in right_col'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use 'left' join type",
+    "fillna for null handling"
+  ],
+  "solution": "def etl(df1, df2):\n    result = df1.join(df2, 'key', 'left')\n    return result.fillna({'right_col': 'N/A'})"
+}

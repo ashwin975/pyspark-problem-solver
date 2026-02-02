@@ -1,0 +1,16 @@
+{
+  "id": "46",
+  "title": "Moving Average",
+  "difficulty": "Hard",
+  "category": "Window Functions",
+  "description": "Calculate 7-day moving average.\n\nYou have a DataFrame with `product_id`, `date`, and `sales` columns. Add a `moving_avg` column containing the 7-day moving average of sales (current day and 6 preceding days).",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('P1', '2023-01-01', 100), ('P1', '2023-01-02', 110),\n    ('P1', '2023-01-03', 120), ('P1', '2023-01-04', 130),\n    ('P1', '2023-01-05', 140), ('P1', '2023-01-06', 150),\n    ('P1', '2023-01-07', 160), ('P1', '2023-01-08', 170)\n]\ninput_df = spark.createDataFrame(data, ['product_id', 'date', 'sales'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'moving_avg' in result.columns, 'Missing moving_avg column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "rowsBetween(-6, 0) covers 7 days",
+    "Current row is 0",
+    "Negative values are preceding rows"
+  ],
+  "solution": "def etl(input_df):\n    window = W.partitionBy('product_id').orderBy('date').rowsBetween(-6, 0)\n    return input_df.withColumn('moving_avg', F.avg('sales').over(window))"
+}

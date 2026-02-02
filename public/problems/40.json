@@ -1,0 +1,15 @@
+{
+  "id": "40",
+  "title": "Explode Array",
+  "difficulty": "Medium",
+  "category": "Transformations",
+  "description": "Explode array column into multiple rows.\n\nYou have a DataFrame with an `array_col` column containing arrays. Explode it so each array element becomes a separate row with a new `item` column.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [('R1', ['a', 'b', 'c']), ('R2', ['x', 'y'])]\ninput_df = spark.createDataFrame(data, ['id', 'array_col'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert result.count() == 5, f'Expected 5 rows after explode, got {result.count()}'\nassert 'item' in result.columns, 'Missing item column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "F.explode() creates multiple rows",
+    "Original row is duplicated for each element"
+  ],
+  "solution": "def etl(input_df):\n    return input_df.select('*', F.explode('array_col').alias('item'))"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "6",
+  "title": "Combine User Interactions",
+  "difficulty": "Medium",
+  "category": "Transformations",
+  "description": "**User Interactions**\n\nYou have three DataFrames representing different user interactions:\n\n**page_visits:** user_id, page_id, visit_time\n**page_likes:** user_id, page_id, like_time  \n**page_comments:** user_id, page_id, comment_time\n\nCombine all interactions into a single DataFrame with columns:\n- user_id\n- page_id\n- interaction_time (renamed from original timestamp)\n- interaction_type (\"visit\", \"like\", or \"comment\")\n\nSort by interaction_time.",
+  "starter_code": "def etl(page_visits, page_likes, page_comments):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nvisits_data = [('U1', 'P1', '2023-01-01 10:00:00'), ('U2', 'P2', '2023-01-01 11:00:00')]\npage_visits = spark.createDataFrame(visits_data, ['user_id', 'page_id', 'visit_time'])\n\nlikes_data = [('U1', 'P1', '2023-01-01 10:05:00'), ('U3', 'P1', '2023-01-01 12:00:00')]\npage_likes = spark.createDataFrame(likes_data, ['user_id', 'page_id', 'like_time'])\n\ncomments_data = [('U1', 'P1', '2023-01-01 10:10:00'), ('U2', 'P2', '2023-01-01 11:30:00')]\npage_comments = spark.createDataFrame(comments_data, ['user_id', 'page_id', 'comment_time'])",
+  "test_validation": "result = etl(page_visits, page_likes, page_comments)\nassert result is not None, 'Function returned None'\nassert 'interaction_type' in result.columns, 'Missing interaction_type column'\nassert 'interaction_time' in result.columns, 'Missing interaction_time column'\nassert result.count() == 6, f'Expected 6 rows, got {result.count()}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use F.lit() to add constant columns",
+    "Use withColumnRenamed() to standardize column names",
+    "Union DataFrames with matching schemas"
+  ],
+  "solution": "def etl(page_visits, page_likes, page_comments):\n    visits = page_visits.withColumn('interaction_type', F.lit('visit'))\n    likes = page_likes.withColumn('interaction_type', F.lit('like'))\n    comments = page_comments.withColumn('interaction_type', F.lit('comment'))\n    \n    visits = visits.withColumnRenamed('visit_time', 'interaction_time')\n    likes = likes.withColumnRenamed('like_time', 'interaction_time')\n    comments = comments.withColumnRenamed('comment_time', 'interaction_time')\n    \n    user_interactions = visits.select('user_id', 'page_id', 'interaction_time', 'interaction_type') \\\n        .union(likes.select('user_id', 'page_id', 'interaction_time', 'interaction_type')) \\\n        .union(comments.select('user_id', 'page_id', 'interaction_time', 'interaction_type'))\n    \n    return user_interactions.orderBy('interaction_time')"
+}
