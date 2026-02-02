@@ -5,16 +5,20 @@ interface CodeEditorProps {
   onChange: (value: string | undefined) => void;
   language?: string;
   readOnly?: boolean;
+  onRun?: () => Promise<void>;
+  isRunning?: boolean;
 }
 
 const CodeEditor = ({ 
   value, 
   onChange, 
   language = "python",
-  readOnly = false 
+  readOnly = false,
+  onRun,
+  isRunning = false
 }: CodeEditorProps) => {
   return (
-    <div className="h-full w-full overflow-hidden rounded-lg border border-border bg-editor-bg">
+    <div className="h-full w-full overflow-hidden rounded-lg border border-border bg-card">
       <Editor
         height="100%"
         language={language}

@@ -29,6 +29,7 @@ const ProblemDetail = () => {
   
   const [code, setCode] = useState(problem?.starterCode || "");
   const [isRunning, setIsRunning] = useState(false);
+  const [output, setOutput] = useState("");
   const [result, setResult] = useState<{
     status: "success" | "error" | null;
     message: string;
@@ -54,50 +55,60 @@ const ProblemDetail = () => {
   const handleRun = async () => {
     setIsRunning(true);
     setResult({ status: null, message: "" });
+    setOutput("Running PySpark code...");
 
-    // Simulate code execution (in real app, this would call a backend service)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Connect to local Docker PySpark engine
+      const response = await fetch("http://localhost:8080/execute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code: code }),
+      });
 
-    // More realistic validation for PySpark code
-    const trimmedCode = code.trim();
-    const hasReturn = trimmedCode.includes("return");
-    const hasDefEtl = trimmedCode.includes("def etl") || trimmedCode.includes("def solution");
-    const isNotJustStarterCode = trimmedCode !== problem.starterCode.trim();
-    const hasActualLogic = !trimmedCode.includes("pass") || trimmedCode.split("pass").length > 2 || (trimmedCode.includes("pass") && hasReturn);
-    
-    // Check if user has written actual code beyond the starter template
-    const hasImplementation = hasReturn && hasDefEtl && isNotJustStarterCode && !trimmedCode.endsWith("pass");
-    
-    if (hasImplementation) {
-      setResult({
-        status: "success",
-        message: "All test cases passed! Great job!"
-      });
-      toast({
-        title: "Success!",
-        description: "Your solution passed all test cases.",
-      });
-    } else {
-      let errorMessage = "Some test cases failed. Check your implementation.";
-      if (!hasReturn) {
-        errorMessage = "Your solution needs to return a value. Did you forget the return statement?";
-      } else if (trimmedCode.endsWith("pass")) {
-        errorMessage = "Replace 'pass' with your implementation logic.";
-      } else if (!isNotJustStarterCode) {
-        errorMessage = "Add your implementation to the starter code.";
+      const data = await response.json();
+
+      // Display stdout if success, or stderr if failed
+      if (data.stdout) {
+        setOutput(data.stdout);
+        setResult({
+          status: "success",
+          message: "Code executed successfully!"
+        });
+        toast({
+          title: "Success!",
+          description: "Your code ran successfully.",
+        });
+      } else if (data.stderr) {
+        setOutput(data.stderr);
+        setResult({
+          status: "error",
+          message: "Execution error - check the output below."
+        });
+      } else if (data.error) {
+        setOutput(`System Error: ${data.error}`);
+        setResult({
+          status: "error",
+          message: "System error occurred."
+        });
       }
+    } catch (error) {
+      setOutput("Failed to connect to Docker Engine. Is it running on localhost:8080?");
       setResult({
         status: "error",
-        message: errorMessage
+        message: "Could not connect to PySpark execution engine."
       });
+      console.error(error);
+    } finally {
+      setIsRunning(false);
     }
-    
-    setIsRunning(false);
   };
 
   const handleReset = () => {
     setCode(problem.starterCode);
     setResult({ status: null, message: "" });
+    setOutput("");
     toast({
       title: "Code Reset",
       description: "Your code has been reset to the starter template.",
@@ -188,28 +199,43 @@ const ProblemDetail = () => {
               />
             </div>
 
-            {/* Result Panel */}
-            {result.status && (
-              <div className={cn(
-                "border-t border-border p-4",
-                result.status === "success" ? "bg-success/10" : "bg-destructive/10"
-              )}>
-                <div className="flex items-center gap-2">
-                  {result.status === "success" ? (
-                    <CheckCircle2 className="h-5 w-5 text-success" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-destructive" />
-                  )}
-                  <span className={cn(
-                    "font-medium",
-                    result.status === "success" ? "text-success" : "text-destructive"
+            {/* Output Panel */}
+            {(output || result.status) && (
+              <div className="border-t border-border flex flex-col max-h-[300px]">
+                {/* Status Header */}
+                {result.status && (
+                  <div className={cn(
+                    "p-3 border-b border-border",
+                    result.status === "success" ? "bg-success/10" : "bg-destructive/10"
                   )}>
-                    {result.status === "success" ? "Accepted" : "Wrong Answer"}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {result.message}
-                </p>
+                    <div className="flex items-center gap-2">
+                      {result.status === "success" ? (
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-destructive" />
+                      )}
+                      <span className={cn(
+                        "font-medium",
+                        result.status === "success" ? "text-success" : "text-destructive"
+                      )}>
+                        {result.status === "success" ? "Executed Successfully" : "Execution Failed"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {result.message}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Output Content */}
+                {output && (
+                  <div className="flex-1 overflow-auto p-4 bg-card">
+                    <div className="text-xs text-muted-foreground mb-2 font-medium">Output:</div>
+                    <pre className="text-sm font-mono whitespace-pre-wrap text-foreground">
+                      {output}
+                    </pre>
+                  </div>
+                )}
               </div>
             )}
           </div>
