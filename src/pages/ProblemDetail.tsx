@@ -104,7 +104,7 @@ ${code}
 ${problem.test_validation}`;
 
     try {
-      const response = await fetch("http://localhost:8080/execute", {
+      const response = await fetch("https://zilla-engine-392625310826.us-central1.run.app/execute", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
