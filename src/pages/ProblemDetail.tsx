@@ -58,11 +58,17 @@ const ProblemDetail = () => {
     // Simulate code execution (in real app, this would call a backend service)
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Mock validation - in production, this would validate against actual test cases
-    const hasReturn = code.includes("return");
-    const hasBasicStructure = code.includes("def solution");
+    // More realistic validation for PySpark code
+    const trimmedCode = code.trim();
+    const hasReturn = trimmedCode.includes("return");
+    const hasDefEtl = trimmedCode.includes("def etl") || trimmedCode.includes("def solution");
+    const isNotJustStarterCode = trimmedCode !== problem.starterCode.trim();
+    const hasActualLogic = !trimmedCode.includes("pass") || trimmedCode.split("pass").length > 2 || (trimmedCode.includes("pass") && hasReturn);
     
-    if (hasReturn && hasBasicStructure) {
+    // Check if user has written actual code beyond the starter template
+    const hasImplementation = hasReturn && hasDefEtl && isNotJustStarterCode && !trimmedCode.endsWith("pass");
+    
+    if (hasImplementation) {
       setResult({
         status: "success",
         message: "All test cases passed! Great job!"
@@ -72,9 +78,17 @@ const ProblemDetail = () => {
         description: "Your solution passed all test cases.",
       });
     } else {
+      let errorMessage = "Some test cases failed. Check your implementation.";
+      if (!hasReturn) {
+        errorMessage = "Your solution needs to return a value. Did you forget the return statement?";
+      } else if (trimmedCode.endsWith("pass")) {
+        errorMessage = "Replace 'pass' with your implementation logic.";
+      } else if (!isNotJustStarterCode) {
+        errorMessage = "Add your implementation to the starter code.";
+      }
       setResult({
         status: "error",
-        message: "Some test cases failed. Check your implementation."
+        message: errorMessage
       });
     }
     
