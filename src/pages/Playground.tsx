@@ -80,7 +80,7 @@ const Playground = () => {
         });
       }
     } catch (error) {
-      setOutput("Failed to connect to Docker Engine. Is it running on localhost:8080?");
+      setOutput("Failed to connect to PySpark execution service. Please try again.");
       setResult({
         status: "error",
         message: "Could not connect to PySpark execution engine."
