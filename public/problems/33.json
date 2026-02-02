@@ -1,0 +1,15 @@
+{
+  "id": "33",
+  "title": "Unpivot Data",
+  "difficulty": "Hard",
+  "category": "Transformations",
+  "description": "Convert wide data to long format using stack.\n\nYou have a DataFrame with columns: id, col1, col2, col3. Convert this wide format to long format with columns: id, column_name, value.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [('ID1', 10, 20, 30), ('ID2', 40, 50, 60)]\ninput_df = spark.createDataFrame(data, ['id', 'col1', 'col2', 'col3'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert result.count() == 6, f'Expected 6 rows after unpivot, got {result.count()}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "stack(n, key1, val1, key2, val2, ...)",
+    "First arg is number of pairs"
+  ],
+  "solution": "def etl(input_df):\n    return input_df.select(\n        'id',\n        F.expr(\"stack(3, 'col1', col1, 'col2', col2, 'col3', col3) as (column_name, value)\")\n    )"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "27",
+  "title": "Coalesce Columns",
+  "difficulty": "Medium",
+  "category": "Null Handling",
+  "description": "Return first non-null value from multiple columns.\n\nYou have a DataFrame with `primary` and `secondary` columns. Create a `result` column that contains the first non-null value from primary, then secondary, or 'default' if both are null.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [('A', 'X'), (None, 'Y'), ('C', None), (None, None)]\ninput_df = spark.createDataFrame(data, ['primary', 'secondary'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'result' in result.columns, 'Missing result column'\nresults = [row['result'] for row in result.collect()]\nassert 'A' in results and 'Y' in results and 'C' in results and 'default' in results, 'Coalesce not working correctly'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Pass multiple columns to coalesce",
+    "Include F.lit() for default value"
+  ],
+  "solution": "def etl(input_df):\n    return input_df.withColumn(\n        'result',\n        F.coalesce(F.col('primary'), F.col('secondary'), F.lit('default'))\n    )"
+}

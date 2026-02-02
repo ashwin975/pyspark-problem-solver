@@ -1,0 +1,15 @@
+{
+  "id": "12",
+  "title": "Correct Social Media Posts",
+  "difficulty": "Easy",
+  "category": "Regex",
+  "description": "**Social Media Posts**\n\nYou have a DataFrame `social_media` with:\n\n| Column   | Type    |\n|----------|---------|\n| id       | integer |\n| text     | string  |\n| date     | string  |\n| likes    | integer |\n| comments | integer |\n| shares   | integer |\n| platform | string  |\n\nReplace all occurrences of \"Python\" in the text column with \"PySpark\".",
+  "starter_code": "def etl(social_media):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    (1, 'I love Python programming!', '2023-01-01', 100, 20, 5, 'Twitter'),\n    (2, 'Python is great for data', '2023-01-02', 50, 10, 2, 'LinkedIn'),\n    (3, 'Learning Java today', '2023-01-03', 30, 5, 1, 'Twitter')\n]\ncolumns = ['id', 'text', 'date', 'likes', 'comments', 'shares', 'platform']\nsocial_media = spark.createDataFrame(data, columns)",
+  "test_validation": "result = etl(social_media)\nassert result is not None, 'Function returned None'\ntexts = [row['text'] for row in result.collect()]\nassert 'I love PySpark programming!' in texts, 'Python not replaced with PySpark'\nassert 'PySpark is great for data' in texts, 'Python not replaced with PySpark'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use F.regexp_replace(column, pattern, replacement)",
+    "This replaces all occurrences"
+  ],
+  "solution": "def etl(social_media):\n    new_social_media = social_media.withColumn(\n        'text',\n        F.regexp_replace('text', 'Python', 'PySpark')\n    )\n    return new_social_media"
+}

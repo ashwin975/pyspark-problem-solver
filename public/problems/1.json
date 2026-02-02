@@ -1,16 +1,16 @@
 {
   "id": "1",
-  "title": "Filter Adults",
+  "title": "Streaming Platform Filter",
   "difficulty": "Easy",
   "category": "Filtering",
-  "description": "# Filter Adults\n\nGiven a DataFrame with columns `Name` and `Age`, filter it to keep only people older than 18.\n\n## Input Schema\n\n| Column | Type |\n|--------|------|\n| Name | string |\n| Age | integer |\n\n## Expected Output\n\nA DataFrame containing only rows where `Age > 18`.",
-  "starter_code": "def solve(df):\n    # Write your transformation here\n    # return df.filter(...)\n    pass",
-  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [('Alice', 25), ('Bob', 10), ('Charlie', 30)]\ncolumns = ['Name', 'Age']\ndf = spark.createDataFrame(data, columns)",
-  "test_validation": "result = solve(df)\nassert result is not None, 'Function returned None'\nassert result.count() == 2, f'Expected 2 rows, got {result.count()}'\nassert result.filter(result.Age <= 18).count() == 0, 'Found minors in result'\nprint('✅ TEST PASSED!')",
+  "description": "**Streaming Platform**\n\nYou work for a video streaming platform and are given a DataFrame containing information about videos. The DataFrame named **input_df** has the following schema:\n\n| Column Name  | Data Type |\n|--------------|-----------|\n| video_id     | Integer   |\n| title        | String    |\n| genre        | String    |\n| release_year | Integer   |\n| duration     | Integer   |\n| view_count   | Integer   |\n\nYour task is to write a function that takes in the input DataFrame and returns a DataFrame containing only the videos with more than 1,000,000 views and released in the last 5 years (assume current year is 2024).\n\n**Example**\n\n| video_id | title                | genre  | release_year | duration | view_count |\n|----------|----------------------|--------|--------------|----------|------------|\n| 1        | Amazing Adventure    | Action | 2020         | 120      | 2500000    |\n| 2        | Sci-fi World         | Sci-fi | 2018         | 140      | 800000     |\n| 3        | Mysterious Island    | Drama  | 2022         | 115      | 1500000    |\n\n**Output** - Only videos with view_count > 1,000,000 AND release_year >= 2019",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    (1, 'Amazing Adventure', 'Action', 2020, 120, 2500000),\n    (2, 'Sci-fi World', 'Sci-fi', 2018, 140, 800000),\n    (3, 'Mysterious Island', 'Drama', 2022, 115, 1500000),\n    (4, 'Old Classic', 'Drama', 2015, 100, 5000000),\n    (5, 'New Hit', 'Comedy', 2023, 95, 500000)\n]\ncolumns = ['video_id', 'title', 'genre', 'release_year', 'duration', 'view_count']\ninput_df = spark.createDataFrame(data, columns)",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert result.count() == 2, f'Expected 2 rows, got {result.count()}'\nassert result.filter(F.col('view_count') <= 1000000).count() == 0, 'Found videos with <= 1M views'\nassert result.filter(F.col('release_year') < 2019).count() == 0, 'Found videos older than 5 years'\nprint('✅ TEST PASSED!')",
   "hints": [
-    "Use the filter() method on the DataFrame",
-    "The condition should check if Age > 18",
-    "You can use df.filter(df.Age > 18) or df.filter(F.col('Age') > 18)"
+    "Use F.col() to reference columns",
+    "Combine conditions with & (and) operator",
+    "Use where() or filter() methods"
   ],
-  "solution": "def solve(df):\n    return df.filter(df.Age > 18)"
+  "solution": "def etl(input_df):\n    current_year = 2024\n    filtered_df = input_df.where(\n        (F.col('view_count') > 1000000)\n        & (F.col('release_year') >= current_year - 5)\n    )\n    return filtered_df"
 }

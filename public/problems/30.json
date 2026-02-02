@@ -1,0 +1,15 @@
+{
+  "id": "30",
+  "title": "Anti Join",
+  "difficulty": "Medium",
+  "category": "Joins",
+  "description": "Find records in df1 that don't exist in df2.\n\nYou have two DataFrames df1 and df2 with a `key` column. Return only the rows from df1 that have no matching key in df2.",
+  "starter_code": "def etl(df1, df2):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata1 = [('K1', 'A'), ('K2', 'B'), ('K3', 'C'), ('K4', 'D')]\ndf1 = spark.createDataFrame(data1, ['key', 'value'])\n\ndata2 = [('K1', 100), ('K3', 300)]\ndf2 = spark.createDataFrame(data2, ['key', 'amount'])",
+  "test_validation": "result = etl(df1, df2)\nassert result is not None, 'Function returned None'\nassert result.count() == 2, f'Expected 2 rows from anti join, got {result.count()}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use 'left_anti' or 'anti' join type",
+    "Returns only non-matching rows"
+  ],
+  "solution": "def etl(df1, df2):\n    return df1.join(df2, 'key', 'left_anti')"
+}

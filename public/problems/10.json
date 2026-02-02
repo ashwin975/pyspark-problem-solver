@@ -1,0 +1,16 @@
+{
+  "id": "10",
+  "title": "PE Firms Full Join",
+  "difficulty": "Medium",
+  "category": "Joins",
+  "description": "**Private Equity Data**\n\nYou have three DataFrames: `pe_firms`, `pe_funds`, and `pe_investments`.\n\n**pe_firms:** firm_id, firm_name, founded_year, location\n**pe_funds:** fund_id, firm_id, fund_name, fund_size, fund_start_year, fund_end_year\n**pe_investments:** investment_id, fund_id, company_name, investment_amount, investment_date\n\nPerform a full outer join on all three DataFrames to combine all records. Filter out rows where all columns are null.",
+  "starter_code": "def etl(pe_firms, pe_funds, pe_investments):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nfirms_data = [(1, 'Alpha Capital', 2000, 'NYC'), (2, 'Beta Partners', 2010, 'LA')]\npe_firms = spark.createDataFrame(firms_data, ['firm_id', 'firm_name', 'founded_year', 'location'])\n\nfunds_data = [(101, 1, 'Fund I', 100000000, 2015, 2025), (102, 1, 'Fund II', 200000000, 2020, 2030)]\npe_funds = spark.createDataFrame(funds_data, ['fund_id', 'firm_id', 'fund_name', 'fund_size', 'fund_start_year', 'fund_end_year'])\n\ninvestments_data = [(1001, 101, 'TechCo', 5000000, '2016-01-15'), (1002, 102, 'HealthCo', 10000000, '2021-03-20')]\npe_investments = spark.createDataFrame(investments_data, ['investment_id', 'fund_id', 'company_name', 'investment_amount', 'investment_date'])",
+  "test_validation": "result = etl(pe_firms, pe_funds, pe_investments)\nassert result is not None, 'Function returned None'\nassert result.count() > 0, 'Result is empty'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use 'outer' for full outer join",
+    "Chain multiple join operations",
+    "Use dropna(how='all') to remove all-null rows"
+  ],
+  "solution": "def etl(pe_firms, pe_funds, pe_investments):\n    joined_df = pe_firms.join(\n        pe_funds, 'firm_id', 'outer'\n    ).join(pe_investments, 'fund_id', 'outer')\n    \n    joined_df = joined_df.dropna(how='all')\n    \n    return joined_df"
+}

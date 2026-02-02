@@ -1,0 +1,16 @@
+{
+  "id": "4",
+  "title": "Mining Extraction Summary",
+  "difficulty": "Medium",
+  "category": "Aggregations",
+  "description": "**Mining Data**\n\nYou have two DataFrames: `mines` and `extraction`.\n\n**mines Schema:**\n| Column   | Type    |\n|----------|---------|\n| id       | integer |\n| location | string  |\n| type     | string  |\n\n**extraction Schema:**\n| Column   | Type    |\n|----------|---------|\n| mine_id  | integer |\n| date     | string  |\n| mineral  | string  |\n| quantity | integer |\n\nCalculate the total quantity of each mineral extracted per location.\n\n**Output Schema:**\n| Column         | Type    |\n|----------------|---------|\n| location       | string  |\n| mineral        | string  |\n| total_quantity | integer |",
+  "starter_code": "def etl(mines, extraction):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nmines_data = [\n    (1, 'North', 'Open Pit'),\n    (2, 'South', 'Underground'),\n    (3, 'North', 'Underground')\n]\nmines = spark.createDataFrame(mines_data, ['id', 'location', 'type'])\n\nextraction_data = [\n    (1, '2023-01-01', 'Gold', 100),\n    (1, '2023-01-02', 'Gold', 150),\n    (2, '2023-01-01', 'Silver', 200),\n    (3, '2023-01-01', 'Gold', 80)\n]\nextraction = spark.createDataFrame(extraction_data, ['mine_id', 'date', 'mineral', 'quantity'])",
+  "test_validation": "result = etl(mines, extraction)\nassert result is not None, 'Function returned None'\nassert 'location' in result.columns, 'Missing location column'\nassert 'mineral' in result.columns, 'Missing mineral column'\nassert 'total_quantity' in result.columns, 'Missing total_quantity column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Join mines and extraction on id == mine_id",
+    "Group by location and mineral",
+    "Use F.sum() to calculate totals"
+  ],
+  "solution": "def etl(mines, extraction):\n    joined_df = mines.join(\n        extraction, mines.id == extraction.mine_id\n    )\n    \n    result_df = joined_df.groupby(\n        ['location', 'mineral']\n    ).agg(\n        F.sum('quantity').alias('total_quantity')\n    )\n    \n    result_df = result_df.orderBy('location', 'mineral')\n    \n    return result_df"
+}

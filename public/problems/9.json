@@ -1,0 +1,16 @@
+{
+  "id": "9",
+  "title": "PE Portfolio Value",
+  "difficulty": "Medium",
+  "category": "Aggregations",
+  "description": "**Private Equity Portfolio**\n\nYou have two DataFrames: `portfolio` and `prices`.\n\n**portfolio Schema:**\n| Column  | Type    |\n|---------|---------|\n| PE_firm | string  |\n| company | string  |\n| shares  | integer |\n\n**prices Schema:**\n| Column        | Type   |\n|---------------|--------|\n| date          | string |\n| company       | string |\n| closing_price | float  |\n\nCalculate the daily portfolio value for each PE firm (shares * closing_price, summed by firm and date).\n\n**Output Schema:**\n| Column          | Type    |\n|-----------------|---------|\n| PE_firm         | string  |\n| date            | string  |\n| portfolio_value | integer |",
+  "starter_code": "def etl(portfolio, prices):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\nportfolio_data = [\n    ('Firm_A', 'AAPL', 100),\n    ('Firm_A', 'GOOGL', 50),\n    ('Firm_B', 'AAPL', 200)\n]\nportfolio = spark.createDataFrame(portfolio_data, ['PE_firm', 'company', 'shares'])\n\nprices_data = [\n    ('2023-01-01', 'AAPL', 150.0),\n    ('2023-01-01', 'GOOGL', 100.0),\n    ('2023-01-02', 'AAPL', 155.0),\n    ('2023-01-02', 'GOOGL', 105.0)\n]\nprices = spark.createDataFrame(prices_data, ['date', 'company', 'closing_price'])",
+  "test_validation": "result = etl(portfolio, prices)\nassert result is not None, 'Function returned None'\nassert 'PE_firm' in result.columns, 'Missing PE_firm column'\nassert 'date' in result.columns, 'Missing date column'\nassert 'portfolio_value' in result.columns, 'Missing portfolio_value column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Join portfolio and prices on company",
+    "Calculate value as shares * closing_price",
+    "Group by PE_firm and date"
+  ],
+  "solution": "def etl(portfolio, prices):\n    merged_df = portfolio.join(prices, on='company', how='inner')\n    \n    portfolio_value = merged_df.withColumn(\n        'value',\n        F.col('shares') * F.col('closing_price')\n    )\n    \n    portfolio_value = portfolio_value.groupby(\n        ['PE_firm', 'date']\n    ).agg(F.sum('value').alias('portfolio_value'))\n    \n    return portfolio_value"
+}

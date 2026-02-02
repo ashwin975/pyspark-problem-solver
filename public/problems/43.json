@@ -1,0 +1,15 @@
+{
+  "id": "43",
+  "title": "Percent Rank",
+  "difficulty": "Medium",
+  "category": "Window Functions",
+  "description": "Calculate percentile rank within groups.\n\nYou have a DataFrame with `group` and `value` columns. Add a `percentile` column showing the percent rank of each value within its group.",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    ('G1', 10), ('G1', 20), ('G1', 30), ('G1', 40),\n    ('G2', 5), ('G2', 15)\n]\ninput_df = spark.createDataFrame(data, ['group', 'value'])",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'percentile' in result.columns, 'Missing percentile column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Returns value between 0 and 1",
+    "0 for first, 1 for last"
+  ],
+  "solution": "def etl(input_df):\n    window = W.partitionBy('group').orderBy('value')\n    return input_df.withColumn('percentile', F.percent_rank().over(window))"
+}

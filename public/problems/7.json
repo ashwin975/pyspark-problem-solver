@@ -1,0 +1,15 @@
+{
+  "id": "7",
+  "title": "Count Self Interactions",
+  "difficulty": "Easy",
+  "category": "Filtering",
+  "description": "**Social Network Interactions**\n\nYou have a DataFrame of user interactions:\n\n| Column         | Type    |\n|----------------|---------|\n| interaction_id | integer |\n| user1_id       | integer |\n| user2_id       | integer |\n| interaction_type | string |\n\nFind users who have interacted with themselves (user1_id == user2_id) and count how many self-interactions each user has.\n\n**Output Schema:**\n| Column                | Type    |\n|-----------------------|---------|\n| user1_id              | integer |\n| self_interaction_count| integer |",
+  "starter_code": "def etl(input_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [\n    (1, 101, 101, 'like'),\n    (2, 101, 102, 'comment'),\n    (3, 102, 102, 'share'),\n    (4, 101, 101, 'share'),\n    (5, 103, 104, 'like'),\n    (6, 102, 102, 'like')\n]\ncolumns = ['interaction_id', 'user1_id', 'user2_id', 'interaction_type']\ninput_df = spark.createDataFrame(data, columns)",
+  "test_validation": "result = etl(input_df)\nassert result is not None, 'Function returned None'\nassert 'user1_id' in result.columns, 'Missing user1_id column'\nassert 'self_interaction_count' in result.columns, 'Missing self_interaction_count column'\nassert result.count() == 2, f'Expected 2 users with self-interactions, got {result.count()}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Filter where user1_id equals user2_id",
+    "Group by user1_id and count interactions"
+  ],
+  "solution": "def etl(input_df):\n    self_interactions_df = input_df.filter(\n        F.col('user1_id') == F.col('user2_id')\n    )\n    \n    self_interactions_count_df = (\n        self_interactions_df.groupBy('user1_id')\n        .agg(F.count('interaction_id').alias('self_interaction_count'))\n    )\n    \n    return self_interactions_count_df"
+}

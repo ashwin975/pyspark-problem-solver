@@ -1,0 +1,15 @@
+{
+  "id": "28",
+  "title": "Inner Join",
+  "difficulty": "Easy",
+  "category": "Joins",
+  "description": "Join two DataFrames on a common key using inner join.\n\nYou have two DataFrames df1 and df2, both with a `common_key` column. Perform an inner join to get only matching rows.",
+  "starter_code": "def etl(df1, df2):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata1 = [('K1', 'A'), ('K2', 'B'), ('K3', 'C')]\ndf1 = spark.createDataFrame(data1, ['common_key', 'value1'])\n\ndata2 = [('K1', 100), ('K2', 200), ('K4', 400)]\ndf2 = spark.createDataFrame(data2, ['common_key', 'value2'])",
+  "test_validation": "result = etl(df1, df2)\nassert result is not None, 'Function returned None'\nassert result.count() == 2, f'Expected 2 rows from inner join, got {result.count()}'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Specify column name for join",
+    "'inner' is default join type"
+  ],
+  "solution": "def etl(df1, df2):\n    return df1.join(df2, 'common_key', 'inner')"
+}

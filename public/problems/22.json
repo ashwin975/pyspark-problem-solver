@@ -1,0 +1,15 @@
+{
+  "id": "22",
+  "title": "Calculate Age",
+  "difficulty": "Easy",
+  "category": "Date Functions",
+  "description": "Calculate age in years from birth_date column.\n\nYou have a DataFrame with a `birth_date` column. Add an `age` column showing the age in years (as an integer).",
+  "starter_code": "def etl(users_df):\n    # Write code here\n    pass",
+  "test_setup": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\nfrom pyspark.sql import Window as W\nfrom pyspark.sql.types import DateType\n\nspark = SparkSession.builder.appName('test').getOrCreate()\n\ndata = [('Alice', '1990-05-15'), ('Bob', '2000-08-20'), ('Carol', '1985-01-10')]\nusers_df = spark.createDataFrame(data, ['name', 'birth_date'])\nusers_df = users_df.withColumn('birth_date', F.to_date('birth_date'))",
+  "test_validation": "result = etl(users_df)\nassert result is not None, 'Function returned None'\nassert 'age' in result.columns, 'Missing age column'\nprint('✅ TEST PASSED!')",
+  "hints": [
+    "Use F.datediff(end, start)",
+    "Divide by 365 and floor"
+  ],
+  "solution": "def etl(users_df):\n    return users_df.withColumn(\n        'age',\n        F.floor(F.datediff(F.current_date(), F.col('birth_date')) / 365)\n    )"
+}
