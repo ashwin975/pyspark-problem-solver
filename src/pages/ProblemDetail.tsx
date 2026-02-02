@@ -138,7 +138,7 @@ const ProblemDetail = () => {
       </header>
 
       {/* Main Content */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
+      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
         {/* Left Panel - Problem Description */}
         <ResizablePanel defaultSize={40} minSize={25} maxSize={60}>
           <ProblemDescription problem={problem} />
@@ -148,7 +148,7 @@ const ProblemDetail = () => {
 
         {/* Right Panel - Code Editor */}
         <ResizablePanel defaultSize={60}>
-          <div className="flex h-full flex-col">
+          <div className="flex h-full min-h-0 flex-col">
             {/* Editor Toolbar */}
             <div className="flex items-center justify-between border-b border-border px-4 py-2">
               <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ const ProblemDetail = () => {
             </div>
 
             {/* Code Editor */}
-            <div className="flex-1">
+            <div className="flex-1 min-h-0">
               <CodeEditor
                 value={code}
                 onChange={(value) => setCode(value || "")}
