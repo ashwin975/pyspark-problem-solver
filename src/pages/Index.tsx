@@ -13,13 +13,13 @@ import {
   Users,
   Trophy
 } from "lucide-react";
-import { problems, categories } from "@/data/problems";
+import { problems } from "@/data/problems";
 
 const Index = () => {
   const stats = {
     problems: problems.length,
-    categories: categories.length,
-    contributors: 52, // ZillaCode inspired - now with 52 problems!
+    categories: 10, // Number of PySpark categories
+    contributors: 52, // ZillaCode inspired
   };
 
   return (
