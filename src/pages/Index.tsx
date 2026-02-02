@@ -19,7 +19,7 @@ const Index = () => {
   const stats = {
     problems: problems.length,
     categories: categories.length,
-    contributors: 50, // ZillaCode inspired
+    contributors: 52, // ZillaCode inspired - now with 52 problems!
   };
 
   return (
