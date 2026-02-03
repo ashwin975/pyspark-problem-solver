@@ -1,4 +1,4 @@
-# PySpark Learnables Database Setup
+# PySpark Katas Database Setup
 
 Run the following SQL in your Supabase SQL Editor (Dashboard → SQL Editor → New query):
 
@@ -103,7 +103,7 @@ ADD COLUMN IF NOT EXISTS theme_preference TEXT DEFAULT 'system';
 
 ## That's it!
 
-After running these SQL commands, your PySpark Learnables app will:
+After running these SQL commands, your PySpark Katas app will:
 - ✅ Allow users to sign up and sign in
 - ✅ Track solved problems and scores
 - ✅ Display a live leaderboard

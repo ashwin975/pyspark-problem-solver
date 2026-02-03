@@ -194,7 +194,7 @@ const Index = () => {
         <div className="container flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-semibold">PySpark Learnables</span>
+            <span className="font-semibold">PySpark Katas</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Open source PySpark learning platform. Contribute on{" "}

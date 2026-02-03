@@ -186,7 +186,7 @@ const Settings = () => {
                 Appearance
               </CardTitle>
               <CardDescription>
-                Customize how PySpark Learnables looks for you
+                Customize how PySpark Katas looks for you
               </CardDescription>
             </CardHeader>
             <CardContent>
