@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Flame, Github, User, LogOut, Trophy } from "lucide-react";
+import { Sparkles, Github, User, LogOut, Trophy, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -18,11 +18,11 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Flame className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy">
+            <Sparkles className="h-5 w-5 text-accent" />
           </div>
           <span className="text-xl font-bold tracking-tight">
-            Spark<span className="text-primary">Lab</span>
+            PySpark<span className="text-primary"> Learnables</span>
           </span>
         </Link>
 
@@ -75,6 +75,12 @@ const Header = () => {
                   {user.email}
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/leaderboard" className="cursor-pointer">
                     <Trophy className="mr-2 h-4 w-4" />

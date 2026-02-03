@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Flame, Loader2, Mail, Wand2 } from 'lucide-react';
+import { Sparkles, Loader2, Mail, Wand2 } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -141,11 +141,11 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Flame className="h-7 w-7 text-primary-foreground" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-navy">
+            <Sparkles className="h-7 w-7 text-accent" />
           </div>
           <CardTitle className="text-2xl">
-            Welcome to <span className="text-primary">SparkLab</span>
+            Welcome to <span className="text-primary">PySpark Learnables</span>
           </CardTitle>
           <CardDescription>
             Sign in to track your progress and compete on the leaderboard

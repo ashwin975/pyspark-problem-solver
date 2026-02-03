@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import { 
-  Flame, 
+  Sparkles, 
   Code2, 
   Database, 
   Zap, 
@@ -32,7 +32,7 @@ const Index = () => {
         <div className="container relative py-24 md:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-              <Flame className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
               Master PySpark through Practice
             </div>
             
@@ -193,8 +193,8 @@ const Index = () => {
       <footer className="border-t border-border py-8">
         <div className="container flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-primary" />
-            <span className="font-semibold">SparkLab</span>
+            <Sparkles className="h-5 w-5 text-primary" />
+            <span className="font-semibold">PySpark Learnables</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Open source PySpark learning platform. Contribute on{" "}
