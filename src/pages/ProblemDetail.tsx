@@ -24,6 +24,8 @@ import { FormattedDescription } from "@/components/MarkdownTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Problem {
   id: string;
@@ -38,9 +40,16 @@ interface Problem {
   solution: string;
 }
 
+const DIFFICULTY_SCORES: Record<string, number> = {
+  Easy: 10,
+  Medium: 25,
+  Hard: 50,
+};
+
 const ProblemDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +62,29 @@ const ProblemDetail = () => {
     message: string;
   }>({ status: null, message: "" });
   const [revealedHints, setRevealedHints] = useState<number[]>([]);
+  const [alreadySolved, setAlreadySolved] = useState(false);
+
+  // Check if already solved
+  useEffect(() => {
+    const checkIfSolved = async () => {
+      if (!user || !id) return;
+      
+      try {
+        const { data } = await supabase
+          .from('solved_problems')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('problem_id', id)
+          .maybeSingle();
+        
+        setAlreadySolved(!!data);
+      } catch (error) {
+        console.error('Error checking solved status:', error);
+      }
+    };
+
+    checkIfSolved();
+  }, [user, id]);
 
   // Fetch problem data
   useEffect(() => {
@@ -85,6 +117,46 @@ const ProblemDetail = () => {
         ? prev.filter(i => i !== index)
         : [...prev, index]
     );
+  };
+
+  const recordSolvedProblem = async () => {
+    if (!user || !problem || !id || alreadySolved) return;
+
+    try {
+      const scoreToAdd = DIFFICULTY_SCORES[problem.difficulty] || 10;
+
+      // Insert solved problem record
+      await supabase.from('solved_problems').insert({
+        user_id: user.id,
+        problem_id: id,
+        score: scoreToAdd,
+      });
+
+      // Update user's profile score and problems_solved count
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('score, problems_solved')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({
+            score: (profile.score || 0) + scoreToAdd,
+            problems_solved: (profile.problems_solved || 0) + 1,
+          })
+          .eq('id', user.id);
+      }
+
+      setAlreadySolved(true);
+      toast({
+        title: `+${scoreToAdd} points!`,
+        description: "Your score has been updated on the leaderboard.",
+      });
+    } catch (error) {
+      console.error('Error recording solved problem:', error);
+    }
   };
 
   const handleRun = async () => {
@@ -122,6 +194,7 @@ ${problem.test_validation}`;
           message: passed ? "All tests passed!" : "Check the output for details."
         });
         if (passed) {
+          await recordSolvedProblem();
           toast({
             title: "Success!",
             description: "All tests passed!",
