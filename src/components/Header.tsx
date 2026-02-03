@@ -22,7 +22,7 @@ const Header = () => {
             <Sparkles className="h-5 w-5 text-accent" />
           </div>
           <span className="text-xl font-bold tracking-tight">
-            PySpark<span className="text-primary"> Learnables</span>
+            PySpark<span className="text-primary"> Katas</span>
           </span>
         </Link>
 
