@@ -164,28 +164,66 @@ const Contribute = () => {
 
         {/* Problem Template */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8">Problem Template</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">Example Problem</h2>
+          <p className="text-center text-muted-foreground mb-6 max-w-2xl mx-auto">
+            Here's an example of a complete problem file. Create a similar JSON file in <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded text-sm">/public/problems/</code>
+          </p>
           <Card className="bg-editor-bg border-border overflow-hidden">
-            <div className="border-b border-border px-4 py-2 text-xs text-muted-foreground">
-              problem_template.py
+            <div className="border-b border-border px-4 py-2 text-xs text-muted-foreground flex items-center gap-2">
+              <FileCode className="h-4 w-4" />
+              public/problems/1.json
             </div>
-            <pre className="p-4 text-sm overflow-x-auto">
+            <pre className="p-4 text-sm overflow-x-auto max-h-[600px] overflow-y-auto">
               <code className="text-foreground/90 font-mono">{`{
-  "id": "unique-problem-id",
-  "title": "Problem Title",
-  "difficulty": "Easy | Medium | Hard",
-  "category": "DataFrame Basics | Transformations | ...",
-  "description": "Clear problem statement with examples...",
-  "starterCode": "def solution(spark: SparkSession):\\n    # Your code here\\n    pass",
-  "solution": "def solution(spark: SparkSession):\\n    # Reference solution...",
-  "testCases": "assert result.count() == expected_count",
+  "id": "1",
+  "title": "Streaming Platform Filter",
+  "difficulty": "Easy",
+  "category": "Filtering",
+  "description": "**Streaming Platform**\\n\\nYou work for a video streaming platform...",
+  
+  "starter_code": "def etl(input_df):\\n    # Write code here\\n    pass",
+  
+  "test_setup": "from pyspark.sql import SparkSession\\n...\\ninput_df = spark.createDataFrame(data, columns)",
+  
+  "test_validation": "result = etl(input_df)\\nassert result.count() == 2\\nprint('✅ TEST PASSED!')",
+  
   "hints": [
-    "Hint 1: Start with...",
-    "Hint 2: Consider using..."
-  ]
+    "Use F.col() to reference columns",
+    "Combine conditions with & (and) operator",
+    "Use where() or filter() methods"
+  ],
+  
+  "solution": "def etl(input_df):\\n    return input_df.where(...)\\n"
 }`}</code>
             </pre>
           </Card>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
+            <Card className="border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">difficulty</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">"Easy" | "Medium" | "Hard"</p>
+              </CardContent>
+            </Card>
+            <Card className="border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">category</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">Filtering, Aggregations, Window Functions, Regex, Pivoting, UDFs, etc.</p>
+              </CardContent>
+            </Card>
+            <Card className="border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">Markdown supported. Use pipe tables for schemas.</p>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* CTA */}
