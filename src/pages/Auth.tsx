@@ -145,7 +145,7 @@ const Auth = () => {
             <Sparkles className="h-7 w-7 text-accent" />
           </div>
           <CardTitle className="text-2xl">
-            Welcome to <span className="text-primary">PySpark Learnables</span>
+            Welcome to <span className="text-primary">PySpark Katas</span>
           </CardTitle>
           <CardDescription>
             Sign in to track your progress and compete on the leaderboard
