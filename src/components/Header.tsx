@@ -50,7 +50,7 @@ const Header = () => {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
             <a 
-              href="https://github.com" 
+              href="https://github.com/ashwin975/pyspark-problem-solver" 
               target="_blank" 
               rel="noopener noreferrer"
               aria-label="GitHub"

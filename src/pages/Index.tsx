@@ -55,7 +55,7 @@ const Index = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="gap-2">
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+                <a href="https://github.com/ashwin975/pyspark-problem-solver" target="_blank" rel="noopener noreferrer">
                   <Github className="h-4 w-4" />
                   Contribute
                 </a>
@@ -198,7 +198,7 @@ const Index = () => {
           </div>
           <p className="text-sm text-muted-foreground">
             Open source PySpark learning platform. Contribute on{" "}
-            <a href="https://github.com" className="text-primary hover:underline">
+            <a href="https://github.com/ashwin975/pyspark-problem-solver" className="text-primary hover:underline">
               GitHub
             </a>
             .
