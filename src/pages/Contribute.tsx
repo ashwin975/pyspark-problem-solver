@@ -174,7 +174,7 @@ const Contribute = () => {
               public/problems/1.json
             </div>
             <pre className="p-4 text-sm overflow-x-auto max-h-[600px] overflow-y-auto">
-              <code className="text-foreground/90 font-mono">{`{
+              <code className="text-white/90 font-mono">{`{
   "id": "1",
   "title": "Streaming Platform Filter",
   "difficulty": "Easy",
