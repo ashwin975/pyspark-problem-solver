@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import ProblemCard from "@/components/ProblemCard";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,44 @@ import { Badge } from "@/components/ui/badge";
 import { problems, categories, type Difficulty, type Category } from "@/data/problems";
 import { Search, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Problems = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [solvedProblemIds, setSolvedProblemIds] = useState<Set<string>>(new Set());
+
+  // Fetch solved problems for the logged-in user
+  useEffect(() => {
+    const fetchSolvedProblems = async () => {
+      if (!user) {
+        setSolvedProblemIds(new Set());
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('solved_problems')
+          .select('problem_id')
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error fetching solved problems:', error);
+          return;
+        }
+
+        const solvedIds = new Set(data?.map(item => item.problem_id) || []);
+        setSolvedProblemIds(solvedIds);
+      } catch (error) {
+        console.error('Error fetching solved problems:', error);
+      }
+    };
+
+    fetchSolvedProblems();
+  }, [user]);
 
   const difficulties: Difficulty[] = ["Easy", "Medium", "Hard"];
 
@@ -130,7 +163,8 @@ const Problems = () => {
               <ProblemCard 
                 key={problem.id} 
                 problem={problem} 
-                index={problems.indexOf(problem)} 
+                index={problems.indexOf(problem)}
+                isSolved={solvedProblemIds.has(problem.id)}
               />
             ))}
           </div>
