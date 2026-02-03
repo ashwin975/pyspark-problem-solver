@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 interface ProblemCardProps {
   problem: Problem;
   index: number;
+  isSolved?: boolean;
 }
 
-const ProblemCard = ({ problem, index }: ProblemCardProps) => {
+const ProblemCard = ({ problem, index, isSolved = false }: ProblemCardProps) => {
   return (
     <Link to={`/problem/${problem.id}`}>
       <Card className="group cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
@@ -31,8 +32,8 @@ const ProblemCard = ({ problem, index }: ProblemCardProps) => {
             </div>
             <div className="flex items-center gap-2">
               <DifficultyBadge difficulty={problem.difficulty} />
-              {problem.completed ? (
-                <CheckCircle2 className="h-5 w-5 text-primary" />
+              {isSolved ? (
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
                 <Circle className="h-5 w-5 text-muted-foreground/30" />
               )}
