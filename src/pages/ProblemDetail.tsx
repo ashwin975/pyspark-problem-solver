@@ -98,7 +98,12 @@ const ProblemDetail = () => {
         }
         const data: Problem = await response.json();
         setProblem(data);
-        setCode(data.starter_code);
+        // Add PySpark imports to starter code for user visibility
+        const pysparkImports = `from pyspark.sql import functions as F
+from pyspark.sql import Window as W
+
+`;
+        setCode(pysparkImports + data.starter_code);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load problem");
       } finally {
@@ -227,7 +232,11 @@ ${problem.test_validation}`;
 
   const handleReset = () => {
     if (problem) {
-      setCode(problem.starter_code);
+      const pysparkImports = `from pyspark.sql import functions as F
+from pyspark.sql import Window as W
+
+`;
+      setCode(pysparkImports + problem.starter_code);
       setResult({ status: null, message: "" });
       setOutput("");
       toast({
