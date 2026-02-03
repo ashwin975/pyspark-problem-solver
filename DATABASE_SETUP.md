@@ -1,4 +1,4 @@
-# SparkLab Database Setup
+# PySpark Learnables Database Setup
 
 Run the following SQL in your Supabase SQL Editor (Dashboard → SQL Editor → New query):
 
@@ -9,6 +9,9 @@ Run the following SQL in your Supabase SQL Editor (Dashboard → SQL Editor → 
 CREATE TABLE public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT NOT NULL UNIQUE,
+  display_name TEXT,
+  birthday DATE,
+  theme_preference TEXT DEFAULT 'system',
   avatar_url TEXT,
   score INTEGER DEFAULT 0 NOT NULL,
   problems_solved INTEGER DEFAULT 0 NOT NULL,
@@ -78,7 +81,19 @@ CREATE TRIGGER on_profiles_updated
   EXECUTE FUNCTION public.handle_updated_at();
 ```
 
-## 4. Configure Authentication
+## 4. Add New Columns (If profiles table already exists)
+
+If you already have the profiles table from a previous setup, run this to add the new columns:
+
+```sql
+-- Add new settings columns to existing profiles table
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS display_name TEXT,
+ADD COLUMN IF NOT EXISTS birthday DATE,
+ADD COLUMN IF NOT EXISTS theme_preference TEXT DEFAULT 'system';
+```
+
+## 5. Configure Authentication
 
 1. Go to **Authentication → Settings** in your Supabase dashboard
 2. Under **Email**, you may want to disable "Confirm email" for easier testing
@@ -88,7 +103,8 @@ CREATE TRIGGER on_profiles_updated
 
 ## That's it!
 
-After running these SQL commands, your SparkLab app will:
+After running these SQL commands, your PySpark Learnables app will:
 - ✅ Allow users to sign up and sign in
 - ✅ Track solved problems and scores
 - ✅ Display a live leaderboard
+- ✅ Support user settings (display name, birthday, theme preference)

@@ -6,13 +6,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Medal, Award, Flame } from 'lucide-react';
+import { Trophy, Medal, Award, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface LeaderboardEntry {
   id: string;
   username: string;
+  display_name: string | null;
   avatar_url: string | null;
   score: number;
   problems_solved: number;
@@ -32,7 +33,7 @@ const Leaderboard = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url, score, problems_solved')
+        .select('id, username, display_name, avatar_url, score, problems_solved')
         .order('score', { ascending: false })
         .limit(100);
 
@@ -89,7 +90,7 @@ const Leaderboard = () => {
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Flame className="h-5 w-5 text-primary" />
+                  <Sparkles className="h-5 w-5 text-primary" />
                   <span className="font-medium">Your Rank</span>
                 </div>
                 <Badge variant="outline" className="text-lg px-4 py-1">
@@ -155,11 +156,11 @@ const Leaderboard = () => {
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={entry.avatar_url || undefined} />
                               <AvatarFallback>
-                                {entry.username?.slice(0, 2).toUpperCase() || '??'}
+                                {(entry.display_name || entry.username)?.slice(0, 2).toUpperCase() || '??'}
                               </AvatarFallback>
                             </Avatar>
                             <span className={`font-medium ${isCurrentUser ? 'text-primary' : ''}`}>
-                              {entry.username}
+                              {entry.display_name || entry.username}
                               {isCurrentUser && <span className="text-xs text-muted-foreground ml-2">(you)</span>}
                             </span>
                           </div>
