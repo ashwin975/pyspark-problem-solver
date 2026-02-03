@@ -81,7 +81,7 @@ const Contribute = () => {
             Open Source
           </div>
           
-          <h1 className="text-4xl font-bold mb-4">Contribute to SparkLab</h1>
+          <h1 className="text-4xl font-bold mb-4">Contribute to PySpark Katas</h1>
           <p className="text-lg text-muted-foreground mb-8">
             Help the community learn PySpark by contributing problems, solutions, and improvements. 
             Your contributions make a difference!
@@ -89,13 +89,13 @@ const Contribute = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" asChild className="gap-2">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/ashwin975/pyspark-problem-solver" target="_blank" rel="noopener noreferrer">
                 <Github className="h-5 w-5" />
                 View on GitHub
               </a>
             </Button>
             <Button size="lg" variant="outline" asChild className="gap-2">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/ashwin975/pyspark-problem-solver/pulls" target="_blank" rel="noopener noreferrer">
                 <GitPullRequest className="h-5 w-5" />
                 Submit a Problem
               </a>
@@ -198,7 +198,7 @@ const Contribute = () => {
                 master PySpark.
               </p>
               <Button size="lg" asChild>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="gap-2">
+                <a href="https://github.com/ashwin975/pyspark-problem-solver" target="_blank" rel="noopener noreferrer" className="gap-2">
                   <Github className="h-5 w-5" />
                   Get Started on GitHub
                 </a>
