@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Flame, Loader2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Flame, Loader2, Mail, Wand2 } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -19,6 +21,7 @@ const Auth = () => {
   const { user, signIn, signUp, loading: authLoading } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [loginMethod, setLoginMethod] = useState<'password' | 'magic'>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -31,6 +34,18 @@ const Auth = () => {
       navigate('/');
     }
   }, [user, navigate]);
+
+  const validateEmail = () => {
+    try {
+      emailSchema.parse(email);
+      return true;
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message);
+      }
+      return false;
+    }
+  };
 
   const validateForm = (isSignup: boolean) => {
     try {
@@ -45,6 +60,31 @@ const Auth = () => {
         setError(err.errors[0].message);
       }
       return false;
+    }
+  };
+
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    
+    if (!validateEmail()) return;
+
+    setLoading(true);
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+    setLoading(false);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess('Check your email for the magic link to sign in!');
     }
   };
 
@@ -113,48 +153,109 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
+          <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'login' | 'signup'); setError(null); setSuccess(null); }}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Sign In
+              {/* Login method toggle */}
+              <div className="flex gap-2 mt-4 mb-4">
+                <Button
+                  type="button"
+                  variant={loginMethod === 'password' ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => { setLoginMethod('password'); setError(null); setSuccess(null); }}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Password
                 </Button>
-              </form>
+                <Button
+                  type="button"
+                  variant={loginMethod === 'magic' ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => { setLoginMethod('magic'); setError(null); setSuccess(null); }}
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Magic Link
+                </Button>
+              </div>
+
+              {loginMethod === 'password' ? (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Password</Label>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Sign In
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleMagicLink} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="magic-email">Email</Label>
+                    <Input
+                      id="magic-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground">
+                    We'll send you a magic link to sign in instantly - no password needed!
+                  </p>
+                  
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {success && (
+                    <Alert>
+                      <AlertDescription className="text-green-600">{success}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                    Send Magic Link
+                  </Button>
+                </form>
+              )}
             </TabsContent>
             
             <TabsContent value="signup">
